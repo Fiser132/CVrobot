@@ -25,16 +25,19 @@ export default function VzorZivotopisPage() {
           <h2 className="text-2xl sm:text-3xl lg:text-[36px] font-dm-serif text-secondary mb-4">
             Ideálne životopis má najčastejšie tieto časti:
           </h2>
-          <p className="mb-6 text-base sm:text-[16px]">
+          <div className="flex flex-col gap-5 sm:text-[16px]">
             Všetky uvedené časti štruktúrovaného životopisu by mali byť obsiahnuté vo Vašom
             dokumente. Ak už teda z nejakého dôvodu musíte štruktúrovaný životopis tvoriť ručne,
             skôr než nejaký poznámkový blok odporúčame aspoň program Word z balíka MS Office, ktorý
-            Vám postráži preklepy a hrubky. Predsa len pravdou zostáva, že vzorový štruktúrovaný
-            životopis, Kór v roku 2025, musí byť dokument, ktorý bude absolútne dokonalý a
-            bezchybný, pretože bude možno rozhodovať o Vašej budúcnosti. Bez preháňania môžeme
-            dokonca povedať, že štruktúrovaný životopis naozaj patrí medzi životné dokumenty, ktoré
-            môžu ovplyvniť Váš život po mnoho a mnoho budúcich rokov!
-          </p>
+            Vám postráži preklepy a hrubky.{' '}
+            <p>
+              Predsa len pravdou zostáva, že vzorový štruktúrovaný životopis, Kór v roku 2025, musí
+              byť dokument, ktorý bude absolútne dokonalý a bezchybný, pretože bude možno rozhodovať
+              o Vašej budúcnosti. Bez preháňania môžeme dokonca povedať, že štruktúrovaný životopis
+              naozaj patrí medzi životné dokumenty, ktoré môžu ovplyvniť Váš život po mnoho a mnoho
+              budúcich rokov!
+            </p>
+          </div>
         </section>
 
         {/* Sections (reused and responsive) */}
@@ -118,29 +121,39 @@ export default function VzorZivotopisPage() {
           <h2 className="text-[32px] sm:text-[42px] lg:text-[56px] text-blue-700 font-dm-serif mb-2">
             No a ako teda štruktúrovaný životopis vidí profesionálna personálna agentúra?
           </h2>
-          <p className="text-base sm:text-[16px] space-y-4">
+          <div className="text-base sm:text-[16px] flex flex-col gap-5">
             Životopis, často spomínaný pod skratkou CV (curriculum vitae = beh života ), je v
             procese výberového konania chápaný ako opis profesijného života uchádzača, stručný výpis
             dosiahnutého vzdelania, pracovných skúseností a iných údajov, ktoré môžu výber nového
-            zamestnanca výrazne ovplyvniť. V súčasnej dobe potom spravidla predstavuje prvý kontakt
-            medzi uchádzačom o zamestnanie a potenciálnym zamestnávateľom. Napísať životopis nie je
-            zložité, bohužiaľ rovnako tak nie je ťažké sa dopustiť úplne zbytočných chýb. To, ako má
-            štruktúrovaný životopis vyzerať, čo v ňom uviesť a čoho sa naopak vyvarovať, môžete
-            nájsť v článku Ako napísať životopis. Alebo si túto prácu ušetrite a jednoducho si
-            životopis nechajte vygenerovať tu. Snáď všetci si spomíname na základnú školu, kedy pani
-            učiteľku zaujímal predovšetkým náš slohový um, a tak sme sa učili písať klasický
-            životopis. S hektickým životným štýlom a navyše v čase, keď sa o niektoré pozície hlási
-            na desiatky záujemcov, však nastáva potreba šetriť čas a udržať personalistovu
-            pozornosť. Preto, ak zamestnávateľ priamo netrvá na životopisu klasickom, čo sa v
-            ojedinelých prípadoch môže stať, sa využíva bodového zoznamu stručných, ale jasných
-            informácií štruktúrovaného životopisu. Štruktúrovaný životopis by nemal v žiadnom
-            prípade presahovať dve strany o formátu A4, bohato stačí len jediná stránka. Tá by mala
-            obsahovať podstatné a pre budúceho zamestnávateľa atraktívne informácie. Oveľa väčšiu
-            šancu, že Váš životopis nezapadne medzi ostatnými, budete mať práve vtedy, ak uvediete
-            niečo zaujímavého, nevšedného, nejakú svoju pridanú hodnotu. Podrobnejšie informácie
-            potom môžete rozviesť v motivačnom liste a neskôr aj osobne na pohovore, ku ktorému Vás
-            pozvú práve na základe dobre napísaného životopisu.
-          </p>
+            zamestnanca výrazne ovplyvniť.
+            <p>
+              súčasnej dobe potom spravidla predstavuje prvý kontakt medzi uchádzačom o zamestnanie
+              a potenciálnym zamestnávateľom. Napísať životopis nie je zložité, bohužiaľ rovnako tak
+              nie je ťažké sa dopustiť úplne zbytočných chýb. To, ako má štruktúrovaný životopis
+              vyzerať, čo v ňom uviesť a čoho sa naopak vyvarovať, môžete nájsť v článku Ako napísať
+              životopis.
+            </p>
+            <p>
+              {' '}
+              Alebo si túto prácu ušetrite a jednoducho si životopis nechajte vygenerovať tu. Snáď
+              všetci si spomíname na základnú školu, kedy pani učiteľku zaujímal predovšetkým náš
+              slohový um, a tak sme sa učili písať klasický životopis. S hektickým životným štýlom a
+              navyše v čase, keď sa o niektoré pozície hlási na desiatky záujemcov, však nastáva
+              potreba šetriť čas a udržať personalistovu pozornosť. Preto, ak zamestnávateľ priamo
+              netrvá na životopisu klasickom, čo sa v ojedinelých prípadoch môže stať, sa využíva
+              bodového zoznamu stručných, ale jasných informácií štruktúrovaného životopisu.
+            </p>
+            <p>
+              {' '}
+              Štruktúrovaný životopis by nemal v žiadnom prípade presahovať dve strany o formátu A4,
+              bohato stačí len jediná stránka. Tá by mala obsahovať podstatné a pre budúceho
+              zamestnávateľa atraktívne informácie. Oveľa väčšiu šancu, že Váš životopis nezapadne
+              medzi ostatnými, budete mať práve vtedy, ak uvediete niečo zaujímavého, nevšedného,
+              nejakú svoju pridanú hodnotu. Podrobnejšie informácie potom môžete rozviesť v
+              motivačnom liste a neskôr aj osobne na pohovore, ku ktorému Vás pozvú práve na základe
+              dobre napísaného životopisu.
+            </p>
+          </div>
         </section>
 
         {[

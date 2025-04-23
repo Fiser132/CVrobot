@@ -18,8 +18,8 @@ export default function Header() {
 
         {/* Desktop Nav */}
         <nav className="hidden lg:flex items-center text-black space-x-6 text-sm leading-[1.8]">
-          <Link href="#" className="hover:text-blue-600">
-            O nás
+          <Link href="/urad-prace" className="hover:text-blue-600">
+            Úrad práce
           </Link>
           <Link
             href="/vzor-zivotopis"
@@ -63,9 +63,6 @@ export default function Header() {
         <div className="fixed inset-0 bg-white z-50 flex flex-col h-screen">
           {/* Scrollable area */}
           <div className="overflow-y-auto flex-1 px-4 pt-6 pb-[300px] md:pb-[600px]">
-            {' '}
-            {/* 👈 add enough bottom padding */}
-            {/* Logo & Close button */}
             <div className="flex justify-between items-center mb-4">
               <Link href="/" onClick={() => setMenuOpen(false)}>
                 <Image src="/logo.svg" alt="Logo" width={135} height={31} />
@@ -81,7 +78,7 @@ export default function Header() {
             {/* Navigation */}
             <nav className="flex flex-col text-black space-y-8 text-[18px] text-center mt-12 leading-[1.8]">
               <Link href="#" className="hover:text-blue-600" onClick={() => setMenuOpen(false)}>
-                O nás
+              Úrad práce
               </Link>
               <Link
                 href="/vzor-zivotopis"
