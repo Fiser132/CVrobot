@@ -19,7 +19,9 @@ export default function Header() {
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center text-black space-x-6 text-sm font-medium">
           <Link href="#" className="hover:text-blue-600">O nás</Link>
-          <Link href="#" className="hover:text-blue-600">Strukturovaný životopis</Link>
+          <Link href="/vzor-zivotopis" className="hover:text-blue-600" onClick={() => setMenuOpen(false)}>
+  Strukturovaný životopis
+</Link>
           <Link href="#" className="hover:text-blue-600">Formulář životopisu</Link>
           <Link href="#" className="hover:text-blue-600">Vzor motivačního dopisu</Link>
         </nav>
@@ -65,7 +67,9 @@ export default function Header() {
             {/* Navigation links */}
             <nav className="flex flex-col text-black space-y-8 text-[18px] text-center mt-12">
               <Link href="#" className="hover:text-blue-600" onClick={() => setMenuOpen(false)}>O nás</Link>
-              <Link href="#" className="hover:text-blue-600" onClick={() => setMenuOpen(false)}>Strukturovaný životopis</Link>
+              <Link href="/vzor-zivotopis" className="hover:text-blue-600" onClick={() => setMenuOpen(false)}>
+  Strukturovaný životopis
+</Link>
               <Link href="#" className="hover:text-blue-600" onClick={() => setMenuOpen(false)}>Formulář životopisu</Link>
               <Link href="#" className="hover:text-blue-600" onClick={() => setMenuOpen(false)}>Vzor motivačního dopisu</Link>
             </nav>

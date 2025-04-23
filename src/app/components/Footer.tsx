@@ -4,7 +4,7 @@ import { faFacebookF, faXTwitter } from "@fortawesome/free-brands-svg-icons"
 
 export default function Footer() {
   return (
-    <footer className="border-t text-sm  bg-white text-[#7C8088]">
+    <footer className=" text-sm  bg-white text-[#7C8088]">
       {/* Top Contact Info */}
       <div className="w-full flex flex-col md:flex-row items-center justify-between gap-8 md:gap-0 py-20 px-4 text-center max-w-5xl container mx-auto">
         <h3 className="text-secondary text-2xl md:text-[40px] font-bold">+420 777 955 235</h3>
