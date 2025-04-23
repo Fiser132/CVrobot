@@ -1,7 +1,7 @@
 export default function Motivation() {
   return (
     <section className="bg-white py-10 px-4 md:px-0">
-      <div className=" mx-auto flex flex-col lg:flex-row gap-10 lg:gap-20 items-center">
+      <div className=" mx-auto flex flex-col xl:flex-row gap-10 lg:gap-20 items-center">
         <img
           src="/girl.png"
           alt="Motivace"
