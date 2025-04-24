@@ -4,6 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faBars, faXmark } from '@fortawesome/free-solid-svg-icons'
+import PrimaryButton from '../components/ui/primary-button'
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -49,9 +50,9 @@ export default function Header() {
 
         {/* Right Action Button (desktop only) */}
         <div className="hidden lg:flex text-right flex-col items-center gap-1">
-          <button className="bg-primary h-[48px] px-8 text-white rounded font-semibold text-[13px] uppercase">
-            Vytvořit životopis
-          </button>
+        <PrimaryButton size="m">
+  VYTVOŘIT ŽIVOTOPIS
+</PrimaryButton>
           <p className="text-xs text-black">
             nebo <span className="underline">upravit mé CV</span>
           </p>
@@ -104,10 +105,10 @@ export default function Header() {
             </nav>
             {/* CTA */}
             <div className="flex flex-col items-center gap-2 mt-20">
-              <button className="bg-primary w-full h-[48px] px-6 text-white rounded font-semibold uppercase">
-                Vytvořit životopis
-              </button>
-              <p className="text-sm text-black mt-2">
+            <PrimaryButton size="m">
+  VYTVOŘIT ŽIVOTOPIS
+</PrimaryButton>
+              <p className="text-[12px] text-black mt-2">
                 nebo <span className="underline">upravit mé CV</span>
               </p>
             </div>

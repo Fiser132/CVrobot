@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faMinus, faPlus } from '@fortawesome/free-solid-svg-icons'
+import Text from '../ui/text'
 
 export default function FAQ() {
   const questions = [
@@ -40,23 +41,25 @@ export default function FAQ() {
   }
 
   return (
-    <section className="py-20 px-4 xl:px-52">
+    <section className="py-20 px-4 container mx-auto">
       <div className="flex flex-col lg:flex-row gap-10 lg:gap-20">
-        <h2 className="text-3xl sm:text-4xl lg:text-[56px] font-dm-serif text-secondary lg:w-[800px]">
-          Často vás zajímá
-        </h2>
-        <ul className="space-y-4 w-full">
+        <Text size='xl' color='secondary' className='lg:w-[800px]'>
+        Často vás zajímá
+        </Text>
+        <ul className="space-y-3 w-full">
           {questions.map((item, i) => (
             <li key={i} className=" cursor-pointer transition" onClick={() => toggle(i)}>
               <div className="">
-                <div className="flex justify-between items-center bg-[#F7F7F7] p-4 rounded-xl">
-                  <span
-                    className={`font-semibold text-[16px] ${
+                <div className="flex justify-between items-center bg-[#F7F7F7] py-3 lg:py-2 px-4 rounded-xl">
+                <Text 
+                    className={`font-semibold ${
                       openIndex === i ? 'text-primary' : 'text-black'
                     }`}
                   >
+                   
                     {item.question}
-                  </span>
+                    </Text>
+        
                   <FontAwesomeIcon
                     icon={openIndex === i ? faMinus : faPlus}
                     className="text-primary h-5"
@@ -64,9 +67,10 @@ export default function FAQ() {
                 </div>
 
                 {openIndex === i && (
-                  <div className="mt-3 bg-white rounded-md leading-[1.8] p-4 text-black transition duration-300 ease-in-out">
-                    {item.answer}
-                  </div>
+
+                  <Text className='p-4 transition duration-300 ease-in-out'>
+                       {item.answer}
+                  </Text>
                 )}
               </div>
             </li>

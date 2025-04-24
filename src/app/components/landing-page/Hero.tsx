@@ -1,4 +1,6 @@
 import Image from 'next/image'
+import PrimaryButton from '../ui/primary-button'
+import Text from '../ui/text'
 
 export default function Hero() {
   return (
@@ -7,18 +9,18 @@ export default function Hero() {
         {/* Text Section */}
         <div className="w-full lg:w-[1500px] lg:pl-44 z-10 flex flex-col text-center gap-0 md:gap-8 lg:text-left px-4">
           <div>
-            <h1 className="text-[36px] md:text-[56px] lg:text-[64px] xl:text-[72px] text-black font-dm-serif mb-4 leading-[1.1] max-w-2xl mx-auto lg:mx-0">
-              Napište si životopis do 5 minut. <span className="text-secondary">Zdarma.</span>
-            </h1>
+            <Text size='xxl' >
+            Napište si životopis do 5 minut. <span className="text-secondary">Zdarma.</span>
+            </Text>
             <p className="text-base md:text-lg mb-6 text-black max-w-xl mx-auto lg:mx-0 leading-[1.8]">
               Profesionální a elegantní životopis s našimi moderními šablonami. Už jen krok vás dělí
               od vaší vysněné práce.
             </p>
           </div>
           <div className="flex justify-center lg:justify-start">
-            <button className="bg-primary py-4 px-6 sm:py-5 sm:px-8 text-white rounded font-semibold text-sm uppercase">
+            <PrimaryButton size='xl'>
               Chci životopis
-            </button>
+            </PrimaryButton>
           </div>
         </div>
 

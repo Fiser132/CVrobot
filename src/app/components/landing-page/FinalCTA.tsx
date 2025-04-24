@@ -1,3 +1,6 @@
+import PrimaryButton from '../ui/primary-button'
+import Text from '../ui/text'
+
 export default function FinalCTA() {
   return (
     <section className="relative px-4 min-h-[440px] md:min-h-[600px] flex justify-center items-center bg-gradient-to-br from-blue-700 to-purple-500 text-white text-center">
@@ -26,12 +29,12 @@ export default function FinalCTA() {
       />
 
       <div className="flex flex-col gap-10 sm:gap-16 items-center max-w-4xl z-30">
-        <h2 className="text-[36px] lg:text-[72px] font-dm-serif leading-snug max-w-4xl">
-          Napsat životopis s CVrobot nebylo jednodušší.
-        </h2>
-        <button className="bg-primary py-6 px-8 text-white md:w-max rounded font-semibold text-sm sm:text-base">
-          CHCI VYTVOŘIT ŽIVOTOPIS
-        </button>
+        <Text size='xxl' color='white'>
+        Napsat životopis s CVrobot nebylo jednodušší.
+        </Text>
+        <PrimaryButton size="xxl">
+  CHCI VYTVOŘIT ŽIVOTOPIS
+</PrimaryButton>
       </div>
     </section>
   )
