@@ -9,8 +9,8 @@ export default function Hero() {
         {/* Text Section */}
         <div className="w-full lg:w-[1500px] lg:pl-44 z-10 flex flex-col text-center gap-0 md:gap-8 lg:text-left px-4">
           <div>
-            <Text size='xxl' >
-            Napište si životopis do 5 minut. <span className="text-secondary">Zdarma.</span>
+            <Text size="xxl">
+              Napište si životopis do 5 minut. <span className="text-secondary">Zdarma.</span>
             </Text>
             <p className="text-base md:text-lg mb-6 text-black max-w-xl mx-auto lg:mx-0 leading-[1.8]">
               Profesionální a elegantní životopis s našimi moderními šablonami. Už jen krok vás dělí
@@ -18,9 +18,7 @@ export default function Hero() {
             </p>
           </div>
           <div className="flex justify-center lg:justify-start">
-            <PrimaryButton size='xl'>
-              Chci životopis
-            </PrimaryButton>
+            <PrimaryButton size="xl">Chci životopis</PrimaryButton>
           </div>
         </div>
 

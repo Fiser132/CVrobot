@@ -40,10 +40,11 @@ export default function MotivacneListyPage() {
             Pravidlá sprievodného listu
           </Text>
           <Text>
-            Aj sprievodný či <strong>motivačný list vzor</strong> má svoje špecifiká a svoje
-            pravidlá. <em>Pri písaní motivačného dopisu si dajte záležať</em> rovnako tak, ako na
-            tvorbe životopisu. Sprievodný list je tiež dokument, podľa ktorého si na Vás nový
-            zamestnávateľ môže urobiť nejaký prvotný názor...
+            Aj sprievodný či{' '}
+            <strong>motivačný list vzor má svoje špecifiká a svoje pravidlá.</strong>{' '}
+            <em>Pri písaní motivačného dopisu si dajte záležať</em> rovnako tak, ako na tvorbe
+            životopisu. Sprievodný list je tiež dokument, podľa ktorého si na Vás nový zamestnávateľ
+            môže urobiť nejaký prvotný názor...
           </Text>
         </section>
 

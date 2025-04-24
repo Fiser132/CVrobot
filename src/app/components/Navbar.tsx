@@ -50,9 +50,7 @@ export default function Header() {
 
         {/* Right Action Button (desktop only) */}
         <div className="hidden lg:flex text-right flex-col items-center gap-1">
-        <PrimaryButton size="m">
-  VYTVOŘIT ŽIVOTOPIS
-</PrimaryButton>
+          <PrimaryButton size="m">VYTVOŘIT ŽIVOTOPIS</PrimaryButton>
           <p className="text-xs text-black">
             nebo <span className="underline">upravit mé CV</span>
           </p>
@@ -105,9 +103,7 @@ export default function Header() {
             </nav>
             {/* CTA */}
             <div className="flex flex-col items-center gap-2 mt-20">
-            <PrimaryButton size="m">
-  VYTVOŘIT ŽIVOTOPIS
-</PrimaryButton>
+              <PrimaryButton size="m">VYTVOŘIT ŽIVOTOPIS</PrimaryButton>
               <p className="text-[12px] text-black mt-2">
                 nebo <span className="underline">upravit mé CV</span>
               </p>

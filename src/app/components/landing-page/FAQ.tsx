@@ -43,23 +43,20 @@ export default function FAQ() {
   return (
     <section className="py-20 px-4 container mx-auto">
       <div className="flex flex-col lg:flex-row gap-10 lg:gap-20">
-        <Text size='xl' color='secondary' className='lg:w-[800px]'>
-        Často vás zajímá
+        <Text size="xl" color="secondary" className="lg:w-[800px]">
+          Často vás zajímá
         </Text>
         <ul className="space-y-3 w-full">
           {questions.map((item, i) => (
             <li key={i} className=" cursor-pointer transition" onClick={() => toggle(i)}>
               <div className="">
                 <div className="flex justify-between items-center bg-[#F7F7F7] py-3 lg:py-2 px-4 rounded-xl">
-                <Text 
-                    className={`font-semibold ${
-                      openIndex === i ? 'text-primary' : 'text-black'
-                    }`}
+                  <Text
+                    className={`font-semibold ${openIndex === i ? 'text-primary' : 'text-black'}`}
                   >
-                   
                     {item.question}
-                    </Text>
-        
+                  </Text>
+
                   <FontAwesomeIcon
                     icon={openIndex === i ? faMinus : faPlus}
                     className="text-primary h-5"
@@ -67,10 +64,7 @@ export default function FAQ() {
                 </div>
 
                 {openIndex === i && (
-
-                  <Text className='p-4 transition duration-300 ease-in-out'>
-                       {item.answer}
-                  </Text>
+                  <Text className="p-4 transition duration-300 ease-in-out">{item.answer}</Text>
                 )}
               </div>
             </li>

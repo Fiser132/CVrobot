@@ -29,12 +29,10 @@ export default function FinalCTA() {
       />
 
       <div className="flex flex-col gap-10 sm:gap-16 items-center max-w-4xl z-30">
-        <Text size='xxl' color='white'>
-        Napsat životopis s CVrobot nebylo jednodušší.
+        <Text size="xxl" color="white">
+          Napsat životopis s CVrobot nebylo jednodušší.
         </Text>
-        <PrimaryButton size="xxl">
-  CHCI VYTVOŘIT ŽIVOTOPIS
-</PrimaryButton>
+        <PrimaryButton size="xxl">CHCI VYTVOŘIT ŽIVOTOPIS</PrimaryButton>
       </div>
     </section>
   )
