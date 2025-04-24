@@ -12,26 +12,26 @@ export default function Header() {
     <header className="bg-white">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         {/* Desktop + Mobile Logo */}
-        <Link href="/" className="flex items-start space-x-2 text-blue-600 font-bold text-2xl">
+        <Link href="/" className="flex items-start space-x-2 text-secondary font-bold text-2xl">
           <Image src="/logo.svg" alt="Logo" width={135} height={31} />
         </Link>
 
         {/* Desktop Nav */}
         <nav className="hidden lg:flex items-center text-black space-x-6 text-sm leading-[1.8]">
-          <Link href="/urad-prace" className="hover:text-blue-600">
+          <Link href="/urad-prace" className="hover:text-secondary">
             Úrad práce
           </Link>
           <Link
             href="/vzor-zivotopis"
-            className="hover:text-blue-600"
+            className="hover:text-secondary"
             onClick={() => setMenuOpen(false)}
           >
             Strukturovaný životopis
           </Link>
-          <Link href="#" className="hover:text-blue-600">
+          <Link href="/formular-zivotopisu" className="hover:text-secondary">
             Formulář životopisu
           </Link>
-          <Link href="#" className="hover:text-blue-600">
+          <Link href="/vzor-motivacny" className="hover:text-secondary">
             Vzor motivačního dopisu
           </Link>
         </nav>
@@ -77,20 +77,28 @@ export default function Header() {
             </div>
             {/* Navigation */}
             <nav className="flex flex-col text-black space-y-8 text-[18px] text-center mt-12 leading-[1.8]">
-              <Link href="#" className="hover:text-blue-600" onClick={() => setMenuOpen(false)}>
-              Úrad práce
+              <Link href="#" className="hover:text-secondary" onClick={() => setMenuOpen(false)}>
+                Úrad práce
               </Link>
               <Link
                 href="/vzor-zivotopis"
-                className="hover:text-blue-600"
+                className="hover:text-secondary"
                 onClick={() => setMenuOpen(false)}
               >
                 Strukturovaný životopis
               </Link>
-              <Link href="#" className="hover:text-blue-600" onClick={() => setMenuOpen(false)}>
+              <Link
+                href="/formular-zivotopisu"
+                className="hover:text-secondary"
+                onClick={() => setMenuOpen(false)}
+              >
                 Formulář životopisu
               </Link>
-              <Link href="#" className="hover:text-blue-600" onClick={() => setMenuOpen(false)}>
+              <Link
+                href="/vzor-motivacny"
+                className="hover:text-secondary"
+                onClick={() => setMenuOpen(false)}
+              >
                 Vzor motivačního dopisu
               </Link>
             </nav>

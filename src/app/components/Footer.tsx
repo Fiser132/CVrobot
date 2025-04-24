@@ -29,7 +29,7 @@ export default function Footer() {
             </Link>
             <Link
               href="#"
-              className="w-9 h-9 border rounded-full flex items-center justify-center text-gray-600 hover:text-blue-600"
+              className="w-9 h-9 border rounded-full flex items-center justify-center text-gray-600 hover:text-secondary"
             >
               <FontAwesomeIcon icon={faXTwitter} />
             </Link>
@@ -39,16 +39,16 @@ export default function Footer() {
         {/* Middle: info links */}
         <div className="flex flex-col gap-3 text-black">
           <h4 className="font-semibold mb-4 text-black">Informace</h4>
-          <Link href="#" className="hover:text-blue-600">
+          <Link href="#" className="hover:text-secondary">
             O nás
           </Link>
-          <Link href="#" className="hover:text-blue-600">
+          <Link href="#" className="hover:text-secondary">
             Spolupráce
           </Link>
-          <Link href="#" className="hover:text-blue-600">
+          <Link href="#" className="hover:text-secondary">
             Kontakt
           </Link>
-          <Link href="#" className="hover:text-blue-600">
+          <Link href="#" className="hover:text-secondary">
             Podmínky užívání služby
           </Link>
         </div>
@@ -65,15 +65,15 @@ export default function Footer() {
 
       {/* Bottom row */}
       <div className="py-20 px-4 text-xs text-gray-500 flex flex-col md:flex-row items-center justify-between gap-4 container mx-auto text-center md:text-left">
-        <p className="max-w-[400px] leading-[1.8]">
-          Životopis vzor © 2024, všechna práva vyhrazena. Je zakázáno jakékoliv kopírování obsahu,
-          web je notářsky ověřen!
-        </p>
+        <div className="max-w-[400px] leading-[1.8]">
+          Životopis vzor © 2024, všechna práva vyhrazena.
+          <p>Je zakázáno jakékoliv kopírování obsahu, web je notářsky ověřen!</p>
+        </div>
         <div className="flex flex-col items-center md:items-end gap-5 md:gap-2 max-w-[512px]">
-          <div className="text-[12px] leading-[1.8]">
+          <div className="text-[12px] leading-[1.8] text-end flex flex-col">
             <Link href="#" className="hover:underline text-gray-500">
-              Nastavení ochrany soukromí a souborů cookie. Spravováno Googlem. Odpovídá požadavkům
-              systému TCF organizace IAB. ID CMP: 300
+              Nastavení ochrany soukromí a souborů cookie.
+              <p>Spravováno Googlem. Odpovídá požadavkům systému TCF organizace IAB. ID CMP: 300</p>
             </Link>
           </div>
 
