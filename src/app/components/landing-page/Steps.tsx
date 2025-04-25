@@ -24,7 +24,7 @@ export default function Steps() {
     <section className="bg-white py-32">
       <div className="container mx-auto px-4 flex flex-col xl:flex-row w-full justify-around">
         {steps.map((step, i) => (
-          <div key={i} className="relative flex items-center gap-2 md:gap-0 w-full">
+          <div key={i} className="relative flex items-center justify-center gap-2 md:gap-0 w-full">
             <div className="relative w-[200px]">
               <div className="text-[160px] md:text-[200px] font-dm-serif text-gray-100  leading-none">
                 {step.number}

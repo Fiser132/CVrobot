@@ -1,6 +1,7 @@
 import { faArrowRightLong } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import Link from 'next/link'
+import Text from '../ui/text'
 
 export default function Blog() {
   const articles = [
@@ -36,9 +37,7 @@ export default function Blog() {
               className="rounded h-full w-[120px] md:h-[174px] md:w-[250px]"
             />
             <div className="flex flex-col  justify-between md:justify-center gap-5 h-full">
-              <h3 className="font-semibold text-[15px] md:text-[20px] leading-[1.6]  text-black">
-                {article.title}
-              </h3>
+              <Text size="md">{article.title}</Text>
               <Link
                 href="#"
                 className="text-primary text-[15px] font-semibold flex leading-[1.8]  items-center gap-3 underline"

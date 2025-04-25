@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import Text from '../ui/text'
 
 export default function Info() {
   return (
@@ -6,9 +7,9 @@ export default function Info() {
       <div className=" mx-auto flex flex-col-reverse xl:flex-row justify-between items-center gap-10 lg:gap-20">
         <div className="flex-1 flex justify-end items-center">
           <div className="max-w-full lg:max-w-[640px] flex flex-col justify-center gap-5 px-4">
-            <h2 className="text-4xl lg:text-[56px] font-dm-serif text-secondary mb-4">
+            <Text size="xl" color="secondary">
               Pomůžeme vám jednoduše vytvořit životopis.
-            </h2>
+            </Text>
             <p className="text-black text-[16px] leading-[1.8]">
               Přes náš formulář odešlete svá data ke zpracování online a to již během pár minut. Náš
               generátor zpracuje všechny vyplněné údaje a vytvoří Vám ihned profesionální PDF a HTML

@@ -3,7 +3,7 @@ import { cva, cn } from '../../../lib/utils'
 import { ReactNode } from 'react'
 
 type TextProps = {
-  size?: 'xl' | 'lg' | 'md' | 'sm'
+  size?: 'xxl' | 'xl' | 'lg' | 'md' | 'sm'
   color?: 'secondary' | 'black' | 'white'
   className?: string
   children: ReactNode
@@ -12,6 +12,7 @@ type TextProps = {
 const textVariants = cva('leading-relaxed', {
   variants: {
     size: {
+      xxl: 'text-[36px] lg:text-[72px] font-dm-serif ',
       xl: 'text-[32px] lg:text-[56px] font-dm-serif ',
       lg: 'text-2xl lg:text-[36px] font-dm-serif',
       md: 'text-[20px] font-semibold',
