@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faMinus, faPlus } from '@fortawesome/free-solid-svg-icons'
 import Text from '../ui/text'
+import { cn } from '@/lib/utils'
 
 export default function FAQ() {
   const questions = [
@@ -48,11 +49,11 @@ export default function FAQ() {
         </Text>
         <ul className="space-y-3 w-full">
           {questions.map((item, i) => (
-            <li key={i} className=" cursor-pointer transition" onClick={() => toggle(i)}>
-              <div className="">
+            <li key={i} className="cursor-pointer transition" onClick={() => toggle(i)}>
+              <div>
                 <div className="flex justify-between items-center bg-[#F7F7F7] py-3 lg:py-2 px-4 rounded-xl">
                   <Text
-                    className={`font-semibold ${openIndex === i ? 'text-primary' : 'text-black'}`}
+                    className={cn('font-semibold', openIndex === i ? 'text-primary' : 'text-black')}
                   >
                     {item.question}
                   </Text>

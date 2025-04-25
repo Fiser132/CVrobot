@@ -4,6 +4,7 @@ import { Poppins } from 'next/font/google'
 import './globals.css'
 import Header from './components/Navbar'
 import Footer from './components/Footer'
+import { cn } from '@/lib/utils'
 
 const poppins = Poppins({
   variable: '--font-poppins',
@@ -29,7 +30,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${poppins.variable} ${dmSerif.variable} antialiased`}>
+      <body className={cn(poppins.variable, dmSerif.variable, 'antialiased')}>
         <Header />
         {children}
         <Footer />
