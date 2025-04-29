@@ -7,7 +7,7 @@ export default function Motivation() {
         <img
           src="/girl.png"
           alt="Motivace"
-          className="w-full max-w-[900px] h-auto object-cover rounded"
+          className="w-full max-w-[900px] h-auto object-cover"
         />
 
         <div className="max-w-full lg:max-w-[640px] px-4 flex flex-col gap-7">

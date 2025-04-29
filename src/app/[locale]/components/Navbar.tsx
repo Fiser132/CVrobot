@@ -19,20 +19,20 @@ export default function Header() {
 
         {/* Desktop Nav */}
         <nav className="hidden lg:flex items-center text-black space-x-6 text-sm leading-[1.8]">
-          <Link href="/urad-prace" className="hover:text-secondary">
+          <Link href="/sk/urad-prace" className="hover:text-secondary">
             Úrad práce
           </Link>
           <Link
-            href="/vzor-zivotopis"
+            href="/sk/vzor-zivotopis"
             className="hover:text-secondary"
             onClick={() => setMenuOpen(false)}
           >
             Strukturovaný životopis
           </Link>
-          <Link href="/formular-zivotopisu" className="hover:text-secondary">
+          <Link href="/sk/formular-zivotopisu" className="hover:text-secondary">
             Formulář životopisu
           </Link>
-          <Link href="/vzor-motivacny" className="hover:text-secondary">
+          <Link href="/sk/motivacne-listy" className="hover:text-secondary">
             Vzor motivačního dopisu
           </Link>
         </nav>
@@ -94,7 +94,7 @@ export default function Header() {
                 Formulář životopisu
               </Link>
               <Link
-                href="/vzor-motivacny"
+                href="/motivacne-listy"
                 className="hover:text-secondary"
                 onClick={() => setMenuOpen(false)}
               >
