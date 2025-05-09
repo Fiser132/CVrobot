@@ -5,6 +5,7 @@ import './globals.css'
 import Header from './components/Navbar'
 import Footer from './components/Footer'
 import { cn } from '@/lib/utils'
+import { ClerkProvider } from '@clerk/nextjs'
 
 const poppins = Poppins({
   variable: '--font-poppins',
@@ -29,6 +30,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
+    <ClerkProvider>
     <html lang="en">
       <body className={cn(poppins.variable, dmSerif.variable, 'antialiased')}>
         <Header />
@@ -36,5 +38,6 @@ export default function RootLayout({
         <Footer />
       </body>
     </html>
+    </ClerkProvider>
   )
 }
