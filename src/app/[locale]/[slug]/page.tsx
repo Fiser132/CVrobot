@@ -11,17 +11,17 @@ export default async function DynamicPage({
 }: {
   params: { locale: string; slug: string }
 }) {
-  const { slug } = params
+  const { slug, locale } = params
 
   const client = await clientPromise
   const db = client.db('pages')
 
   const page = await db.collection('content').findOne({
     url: `/${slug}`,
-    language: 'sk',
+    language: locale,
   })
 
-  if (!page) {
+  if (!page || typeof page.body !== 'string') {
     notFound()
   }
 
@@ -46,7 +46,9 @@ export default async function DynamicPage({
               </Text>
             ),
             p: ({ children }) => <Text>{children}</Text>,
-            a: ({ children, href }) => <OrangeLink href={href ?? '#'}>{children}</OrangeLink>,
+            a: ({ children, href }) => (
+              <OrangeLink href={href ?? '#'}>{children}</OrangeLink>
+            ),
             ul: ({ children }) => (
               <ul className="list-disc list-inside space-y-2 text-[16px] marker:text-primary">
                 {children}
@@ -63,4 +65,16 @@ export default async function DynamicPage({
       <FinalCTA />
     </div>
   )
+}
+
+export async function generateStaticParams() {
+  const client = await clientPromise
+  const db = client.db('pages')
+
+  const pages = await db.collection('content').find({}).toArray()
+
+  return pages.map((page) => ({
+    locale: page.language,
+    slug: page.url.replace('/', ''),
+  }))
 }
