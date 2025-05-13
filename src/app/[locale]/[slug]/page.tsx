@@ -6,7 +6,14 @@ import OrangeLink from '../components/ui/orange-link'
 import FinalCTA from '../components/landing-page/FinalCTA'
 import Table from '../components/ui/Table'
 
-export default async function Page({ params }: any) {
+type PageProps = {
+  params: {
+    slug: string
+    locale: string
+  }
+}
+
+export default async function Page({ params }: PageProps) {
   const { slug, locale } = params
 
   const client = await clientPromise
@@ -60,7 +67,9 @@ export default async function Page({ params }: any) {
   )
 }
 
-export async function generateStaticParams() {
+export async function generateStaticParams(): Promise<
+  { slug: string; locale: string }[]
+> {
   const client = await clientPromise
   const db = client.db('pages')
   const pages = await db.collection('content').find({}).toArray()
