@@ -6,7 +6,7 @@ import OrangeLink from '../components/ui/orange-link'
 import FinalCTA from '../components/landing-page/FinalCTA'
 import Table from '../components/ui/Table'
 
-export default async function DynamicPage({
+export default async function Page({
   params,
 }: {
   params: { locale: string; slug: string }
