@@ -6,14 +6,11 @@ import OrangeLink from '../components/ui/orange-link'
 import FinalCTA from '../components/landing-page/FinalCTA'
 import Table from '../components/ui/Table'
 
-interface PageProps {
-  params: {
-    locale: string
-    slug: string
-  }
-}
-
-export default async function DynamicPage({ params }: PageProps) {
+export default async function DynamicPage({
+  params,
+}: {
+  params: { locale: string; slug: string }
+}) {
   const { slug } = params
 
   const client = await clientPromise
