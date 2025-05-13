@@ -1,4 +1,4 @@
-import { Metadata } from 'next'
+
 import { notFound } from 'next/navigation'
 import clientPromise from '@/lib/mongodb'
 import ReactMarkdown from 'react-markdown'
