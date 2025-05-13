@@ -12,6 +12,7 @@ const globalForMongo = globalThis as unknown as { _mongoClientPromise?: Promise<
 
 const client = new MongoClient(uri, options)
 
-const clientPromise = globalForMongo._mongoClientPromise ?? (globalForMongo._mongoClientPromise = client.connect())
+const clientPromise =
+  globalForMongo._mongoClientPromise ?? (globalForMongo._mongoClientPromise = client.connect())
 
 export default clientPromise

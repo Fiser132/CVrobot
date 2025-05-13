@@ -15,10 +15,9 @@ export async function PUT(req: Request) {
   const client = await clientPromise
   const db = client.db('pages')
 
-  const result = await db.collection('cvs').updateOne(
-    { _id: new ObjectId(id), userId },
-    { $set: { content, date: new Date() } }
-  )
+  const result = await db
+    .collection('cvs')
+    .updateOne({ _id: new ObjectId(id), userId }, { $set: { content, date: new Date() } })
 
   return NextResponse.json({ success: true, updated: result.modifiedCount })
 }

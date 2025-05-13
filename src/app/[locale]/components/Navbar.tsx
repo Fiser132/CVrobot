@@ -16,7 +16,7 @@ export default function Header() {
   const [dropdownOpen, setDropdownOpen] = useState(false)
 
   const { isSignedIn, user } = useUser()
-const userName =  user?.fullName ?? 'Uživatel'
+  const userName = user?.fullName ?? 'Uživatel'
   const params = useParams()
   const locale = params.locale ?? 'sk'
   const withLocale = (path: string) => `/${locale}${path}`
@@ -24,30 +24,44 @@ const userName =  user?.fullName ?? 'Uživatel'
   return (
     <header className="bg-white">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-        <Link href={withLocale('/')} className="flex items-start space-x-2 text-secondary font-bold text-2xl">
+        <Link
+          href={withLocale('/')}
+          className="flex items-start space-x-2 text-secondary font-bold text-2xl"
+        >
           <Image src="/logo.svg" alt="Logo" width={135} height={31} />
         </Link>
 
         {/* Desktop Nav */}
         <nav className="hidden lg:flex items-center text-black space-x-6 text-sm leading-[1.8]">
-          <Link href={withLocale('/urad-prace')} className="hover:text-secondary">Úrad práce</Link>
-          <Link href={withLocale('/vzor-zivotopis')} className="hover:text-secondary">Strukturovaný životopis</Link>
-          <Link href={withLocale('/formular-zivotopisu')} className="hover:text-secondary">Formulář životopisu</Link>
-          <Link href={withLocale('/motivacne-listy')} className="hover:text-secondary">Vzor motivačního dopisu</Link>
-          <Link href={withLocale('/contact-page')} className="hover:text-secondary">Kontakt</Link>
+          <Link href={withLocale('/urad-prace')} className="hover:text-secondary">
+            Úrad práce
+          </Link>
+          <Link href={withLocale('/vzor-zivotopis')} className="hover:text-secondary">
+            Strukturovaný životopis
+          </Link>
+          <Link href={withLocale('/formular-zivotopisu')} className="hover:text-secondary">
+            Formulář životopisu
+          </Link>
+          <Link href={withLocale('/motivacne-listy')} className="hover:text-secondary">
+            Vzor motivačního dopisu
+          </Link>
+          <Link href={withLocale('/contact-page')} className="hover:text-secondary">
+            Kontakt
+          </Link>
         </nav>
 
         {/* Desktop User/Profile or CTA */}
         <div className="hidden lg:flex relative">
           {!isSignedIn ? (
             <div className="flex text-right flex-col items-center gap-1">
-              <PrimaryButton size="m" >
+              <PrimaryButton size="m">
                 <Link href="/sign-up">VYTVOŘIT ŽIVOTOPIS</Link>
               </PrimaryButton>
               <p className="text-xs text-black">
-              nebo <SignInButton mode="modal">
-    <span className="underline cursor-pointer">upravit mé CV</span>
-  </SignInButton>
+                nebo{' '}
+                <SignInButton mode="modal">
+                  <span className="underline cursor-pointer">upravit mé CV</span>
+                </SignInButton>
               </p>
             </div>
           ) : (
@@ -60,16 +74,23 @@ const userName =  user?.fullName ?? 'Uživatel'
                 <span className="text-[14px] underline">{userName}</span>
               </button>
               {dropdownOpen && (
-                <div className="absolute right-0 mt-2 w-max bg-white border border-gray-200 text-black shadow-xl px-5 z-50">
-                  <Link href={withLocale('/ucet')} className="block px-4 py-2 text-sm hover:bg-gray-100 hover:text-primary">Moje životopisy</Link>
+                <div className="absolute right-0 mt-2 w-max bg-white border border-gray-200 text-black shadow-xl z-50">
                   <Link
-  href={withLocale('/nastavenia')}
-  className="block px-4 py-2 text-sm hover:bg-gray-100 hover:text-primary"
->
-  Změna hesla
-</Link>
+                    href={withLocale('/ucet')}
+                    className="block px-6 py-2 text-sm hover:bg-gray-100 hover:text-primary"
+                  >
+                    Moje životopisy
+                  </Link>
+                  <Link
+                    href={withLocale('/nastavenia')}
+                    className="block px-6 py-2 text-sm hover:bg-gray-100 hover:text-primary"
+                  >
+                    Změna hesla
+                  </Link>
                   <SignOutButton>
-                    <button className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 hover:text-primary">Odhlásit se</button>
+                    <button className="block w-full text-left px-6 py-2 text-sm hover:bg-gray-100 hover:text-primary">
+                      Odhlásit se
+                    </button>
                   </SignOutButton>
                 </div>
               )}
@@ -107,11 +128,21 @@ const userName =  user?.fullName ?? 'Uživatel'
             </div>
 
             <nav className="flex flex-col text-black space-y-8 text-[18px] text-center mt-12 leading-[1.8]">
-              <Link href={withLocale('/urad-prace')} onClick={() => setMenuOpen(false)}>Úrad práce</Link>
-              <Link href={withLocale('/vzor-zivotopis')} onClick={() => setMenuOpen(false)}>Strukturovaný životopis</Link>
-              <Link href={withLocale('/formular-zivotopisu')} onClick={() => setMenuOpen(false)}>Formulář životopisu</Link>
-              <Link href={withLocale('/motivacne-listy')} onClick={() => setMenuOpen(false)}>Vzor motivačního dopisu</Link>
-              <Link href={withLocale('/contact-page')} onClick={() => setMenuOpen(false)}>Kontakt</Link>
+              <Link href={withLocale('/urad-prace')} onClick={() => setMenuOpen(false)}>
+                Úrad práce
+              </Link>
+              <Link href={withLocale('/vzor-zivotopis')} onClick={() => setMenuOpen(false)}>
+                Strukturovaný životopis
+              </Link>
+              <Link href={withLocale('/formular-zivotopisu')} onClick={() => setMenuOpen(false)}>
+                Formulář životopisu
+              </Link>
+              <Link href={withLocale('/motivacne-listy')} onClick={() => setMenuOpen(false)}>
+                Vzor motivačního dopisu
+              </Link>
+              <Link href={withLocale('/contact-page')} onClick={() => setMenuOpen(false)}>
+                Kontakt
+              </Link>
             </nav>
 
             {isSignedIn ? (
@@ -121,19 +152,35 @@ const userName =  user?.fullName ?? 'Uživatel'
                   <p className="text-sm font-semibold">{userName}</p>
                 </div>
                 <div className="mt-4 text-sm text-black text-center space-y-2">
-                  <Link href={withLocale('/profil')} onClick={() => setMenuOpen(false)} className="block">Můj profil</Link>
-                  <Link href={withLocale('/nastaveni')} onClick={() => setMenuOpen(false)} className="block">Nastavení</Link>
+                  <Link
+                    href={withLocale('/profil')}
+                    onClick={() => setMenuOpen(false)}
+                    className="block"
+                  >
+                    Můj profil
+                  </Link>
+                  <Link
+                    href={withLocale('/nastaveni')}
+                    onClick={() => setMenuOpen(false)}
+                    className="block"
+                  >
+                    Nastavení
+                  </Link>
                   <SignOutButton>
-                    <button className="block w-full" onClick={() => setMenuOpen(false)}>Odhlásit se</button>
+                    <button className="block w-full" onClick={() => setMenuOpen(false)}>
+                      Odhlásit se
+                    </button>
                   </SignOutButton>
                 </div>
               </div>
             ) : (
               <div className="flex flex-col items-center gap-4 mt-20">
-                <PrimaryButton >
+                <PrimaryButton>
                   <Link href="/sign-up">VYTVOŘIT ŽIVOTOPIS</Link>
                 </PrimaryButton>
-                <Link className="underline text-black text-sm" href="/sign-in">Přihlásit se</Link>
+                <Link className="underline text-black text-sm" href="/sign-in">
+                  Přihlásit se
+                </Link>
               </div>
             )}
           </div>

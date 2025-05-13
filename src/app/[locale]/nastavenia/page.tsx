@@ -1,5 +1,4 @@
-import { UserProfile } from '@clerk/nextjs';
-
+import { UserProfile } from '@clerk/nextjs'
 
 const NastaveniPage = () => {
   return (
@@ -7,8 +6,7 @@ const NastaveniPage = () => {
       <h1 className="text-2xl font-semibold mb-4 text-black">Nastavení účtu</h1>
       <UserProfile />
     </main>
-  );
-};
+  )
+}
 
-
-export default NastaveniPage;
+export default NastaveniPage

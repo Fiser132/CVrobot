@@ -18,7 +18,7 @@ export default async function DynamicPage({ params }: Params) {
 
   const page = await db.collection('content').findOne({
     url: `/${params.slug}`,
-    language: 'sk'
+    language: 'sk',
   })
 
   if (!page) {
@@ -35,37 +35,25 @@ export default async function DynamicPage({ params }: Params) {
                 {children}
               </Text>
             ),
-            h2: ({  children }) => (
+            h2: ({ children }) => (
               <Text size="lg" color="secondary" className="mb-2 mt-5">
                 {children}
               </Text>
             ),
-            h3: ({  children }) => (
+            h3: ({ children }) => (
               <Text size="md" className="mt-10">
                 {children}
               </Text>
             ),
-            p: ({  children }) => (
-              <Text>
-                {children}
-              </Text>
-            ),
-            a: ({  children, href }) => (
-              <OrangeLink href={href || '#'}>
-                {children}
-              </OrangeLink>
-            ),
+            p: ({ children }) => <Text>{children}</Text>,
+            a: ({ children, href }) => <OrangeLink href={href || '#'}>{children}</OrangeLink>,
             ul: ({ children }) => (
               <ul className="list-disc list-inside space-y-2 text-[16px] marker:text-primary">
                 {children}
               </ul>
             ),
-            li: ({  children }) => (
-              <li>{children}</li>
-            ),
-            h4: ({  }) => (
-                <Table/>
-              )
+            li: ({ children }) => <li>{children}</li>,
+            h4: ({}) => <Table />,
           }}
         >
           {page.body}
