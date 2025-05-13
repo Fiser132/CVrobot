@@ -1,18 +1,19 @@
-import clientPromise from '@/lib/mongodb'
+import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import clientPromise from '@/lib/mongodb'
 import ReactMarkdown from 'react-markdown'
 import Text from '../components/ui/text'
 import OrangeLink from '../components/ui/orange-link'
 import FinalCTA from '../components/landing-page/FinalCTA'
 import Table from '../components/ui/Table'
 
-interface Params {
+interface PageProps {
   params: {
     slug: string
   }
 }
 
-export default async function DynamicPage({ params }: Params) {
+export default async function DynamicPage({ params }: PageProps) {
   const client = await clientPromise
   const db = client.db('pages')
 
@@ -46,14 +47,16 @@ export default async function DynamicPage({ params }: Params) {
               </Text>
             ),
             p: ({ children }) => <Text>{children}</Text>,
-            a: ({ children, href }) => <OrangeLink href={href || '#'}>{children}</OrangeLink>,
+            a: ({ children, href }) => (
+              <OrangeLink href={href ?? '#'}>{children}</OrangeLink>
+            ),
             ul: ({ children }) => (
               <ul className="list-disc list-inside space-y-2 text-[16px] marker:text-primary">
                 {children}
               </ul>
             ),
             li: ({ children }) => <li>{children}</li>,
-            h4: ({}) => <Table />,
+            h4: () => <Table />,
           }}
         >
           {page.body}
