@@ -6,14 +6,7 @@ import OrangeLink from '../components/ui/orange-link'
 import FinalCTA from '../components/landing-page/FinalCTA'
 import Table from '../components/ui/Table'
 
-type Params = {
-  params: {
-    slug: string
-    locale: string
-  }
-}
-
-export default async function Page({ params }: Params) {
+export default async function Page({ params }: any) {
   const { slug, locale } = params
 
   const client = await clientPromise
@@ -29,54 +22,47 @@ export default async function Page({ params }: Params) {
   }
 
   return (
-    <div>
-      <main className="bg-white text-black px-4 py-20 pb-44 flex flex-col gap-5 max-w-5xl mx-auto leading-relaxed prose prose-lg">
-        <ReactMarkdown
-          components={{
-            h1: ({ children }) => (
-              <Text size="xl" color="secondary" className="font-dm-serif mt-4">
-                {children}
-              </Text>
-            ),
-            h2: ({ children }) => (
-              <Text size="lg" color="secondary" className="mb-2 mt-5">
-                {children}
-              </Text>
-            ),
-            h3: ({ children }) => (
-              <Text size="md" className="mt-10">
-                {children}
-              </Text>
-            ),
-            p: ({ children }) => <Text>{children}</Text>,
-            a: ({ children, href }) => (
-              <OrangeLink href={href ?? '#'}>{children}</OrangeLink>
-            ),
-            ul: ({ children }) => (
-              <ul className="list-disc list-inside space-y-2 text-[16px] marker:text-primary">
-                {children}
-              </ul>
-            ),
-            li: ({ children }) => <li>{children}</li>,
-            h4: () => <Table />,
-          }}
-        >
-          {page.body}
-        </ReactMarkdown>
-      </main>
-
+    <main className="bg-white text-black px-4 py-20 pb-44 flex flex-col gap-5 max-w-5xl mx-auto leading-relaxed prose prose-lg">
+      <ReactMarkdown
+        components={{
+          h1: ({ children }) => (
+            <Text size="xl" color="secondary" className="font-dm-serif mt-4">
+              {children}
+            </Text>
+          ),
+          h2: ({ children }) => (
+            <Text size="lg" color="secondary" className="mb-2 mt-5">
+              {children}
+            </Text>
+          ),
+          h3: ({ children }) => (
+            <Text size="md" className="mt-10">
+              {children}
+            </Text>
+          ),
+          p: ({ children }) => <Text>{children}</Text>,
+          a: ({ children, href }) => (
+            <OrangeLink href={href ?? '#'}>{children}</OrangeLink>
+          ),
+          ul: ({ children }) => (
+            <ul className="list-disc list-inside space-y-2 text-[16px] marker:text-primary">
+              {children}
+            </ul>
+          ),
+          li: ({ children }) => <li>{children}</li>,
+          h4: () => <Table />,
+        }}
+      >
+        {page.body}
+      </ReactMarkdown>
       <FinalCTA />
-    </div>
+    </main>
   )
 }
 
-// ✅ Return type ensures Vercel doesn't guess it's Promise[]
-export async function generateStaticParams(): Promise<
-  { slug: string; locale: string }[]
-> {
+export async function generateStaticParams() {
   const client = await clientPromise
   const db = client.db('pages')
-
   const pages = await db.collection('content').find({}).toArray()
 
   return pages.map((page) => ({
