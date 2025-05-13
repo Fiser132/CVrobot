@@ -1,4 +1,3 @@
-
 import { notFound } from 'next/navigation'
 import clientPromise from '@/lib/mongodb'
 import ReactMarkdown from 'react-markdown'
@@ -9,16 +8,19 @@ import Table from '../components/ui/Table'
 
 interface PageProps {
   params: {
+    locale: string
     slug: string
   }
 }
 
 export default async function DynamicPage({ params }: PageProps) {
+  const { slug } = params
+
   const client = await clientPromise
   const db = client.db('pages')
 
   const page = await db.collection('content').findOne({
-    url: `/${params.slug}`,
+    url: `/${slug}`,
     language: 'sk',
   })
 
@@ -47,9 +49,7 @@ export default async function DynamicPage({ params }: PageProps) {
               </Text>
             ),
             p: ({ children }) => <Text>{children}</Text>,
-            a: ({ children, href }) => (
-              <OrangeLink href={href ?? '#'}>{children}</OrangeLink>
-            ),
+            a: ({ children, href }) => <OrangeLink href={href ?? '#'}>{children}</OrangeLink>,
             ul: ({ children }) => (
               <ul className="list-disc list-inside space-y-2 text-[16px] marker:text-primary">
                 {children}
