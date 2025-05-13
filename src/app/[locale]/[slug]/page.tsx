@@ -6,11 +6,14 @@ import OrangeLink from '../components/ui/orange-link'
 import FinalCTA from '../components/landing-page/FinalCTA'
 import Table from '../components/ui/Table'
 
-export default async function Page({
-  params,
-}: {
-  params: { locale: string; slug: string }
-}) {
+type Params = {
+  params: {
+    slug: string
+    locale: string
+  }
+}
+
+export default async function Page({ params }: Params) {
   const { slug, locale } = params
 
   const client = await clientPromise
@@ -67,7 +70,10 @@ export default async function Page({
   )
 }
 
-export async function generateStaticParams() {
+// ✅ Return type ensures Vercel doesn't guess it's Promise[]
+export async function generateStaticParams(): Promise<
+  { slug: string; locale: string }[]
+> {
   const client = await clientPromise
   const db = client.db('pages')
 
