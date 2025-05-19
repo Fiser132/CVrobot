@@ -1,32 +1,32 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import PrimaryButton from '../components/ui/primary-button'
-import FinalCTA from '../components/landing-page/FinalCTA'
+import Link from 'next/link'
+import { useParams } from 'next/navigation'
+import PrimaryButton from './../components/ui/primary-button'
+import FinalCTA from './../components/landing-page/FinalCTA'
 import { useUser } from '@clerk/nextjs'
 
 interface Cv {
   _id: string
   name: string
   date: string
-  content: { text?: string }
+  content: Record<string, any>
 }
 
 const UcetPage = () => {
   const { user } = useUser()
   const [cvs, setCvs] = useState<Cv[]>([])
-
-  const [editingCv, setEditingCv] = useState<Cv | null>(null)
-  const [editContent, setEditContent] = useState<string>('')
-  const [viewContent, setViewContent] = useState<string>('')
-
-  const [editModalOpen, setEditModalOpen] = useState(false)
+  const [viewContent, setViewContent] = useState<Record<string, any>>({})
   const [viewModalOpen, setViewModalOpen] = useState(false)
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [cvToDelete, setCvToDelete] = useState<Cv | null>(null)
-
   const [createModalOpen, setCreateModalOpen] = useState(false)
   const [newCvTitle, setNewCvTitle] = useState('')
+
+  const params = useParams()
+  const locale = params.locale ?? 'sk'
+  const withLocale = (path: string) => `/${locale}${path}`
 
   const fetchCvs = async () => {
     const res = await fetch('/api/cvs')
@@ -43,42 +43,20 @@ const UcetPage = () => {
     await fetch('/api/cvs', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name: newCvTitle.trim(),
-        content: { text: '' },
-      }),
+      body: JSON.stringify({ name: newCvTitle.trim(), content: {} }),
     })
     setCreateModalOpen(false)
     setNewCvTitle('')
     fetchCvs()
   }
 
-  const handleSaveContent = async () => {
-    if (!editingCv) return
-
-    await fetch('/api/cvs/update', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        id: editingCv._id,
-        content: { text: editContent },
-      }),
-    })
-
-    setEditModalOpen(false)
-    setEditingCv(null)
-    fetchCvs()
-  }
-
   const handleDeleteCv = async () => {
     if (!cvToDelete) return
-
     await fetch('/api/cvs/delete', {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: cvToDelete._id }),
     })
-
     setDeleteModalOpen(false)
     setCvToDelete(null)
     fetchCvs()
@@ -87,13 +65,11 @@ const UcetPage = () => {
   return (
     <main className="flex flex-col gap-32">
       <div className="flex flex-col justify-center items-center">
-        {/* CTA Banner */}
         <div className="text-center bg-gradient-to-r from-secondary via-[#2195e8] to-secondary py-12 text-white container flex flex-col gap-6 items-center">
           <p className="text-[24px] font-semibold">Ještě nemáte životopis?</p>
           <PrimaryButton onClick={() => setCreateModalOpen(true)}>Vytvořit životopis</PrimaryButton>
         </div>
 
-        {/* CV List */}
         <section className="py-10 flex flex-col items-start w-full container">
           <h2 className="text-[24px] text-black font-semibold mb-12">
             {user?.fullName}&apos;s životopisy
@@ -107,7 +83,7 @@ const UcetPage = () => {
                     alt="Náhled životopisu"
                     className="h-[320px] shadow-lg cursor-pointer"
                     onClick={() => {
-                      setViewContent(cv.content?.text || '')
+                      setViewContent(cv.content)
                       setViewModalOpen(true)
                     }}
                   />
@@ -128,16 +104,12 @@ const UcetPage = () => {
                   </div>
                   <ul className="space-y-4">
                     <li>
-                      <span
-                        className="text-red-600 text-[15px] underline cursor-pointer"
-                        onClick={() => {
-                          setEditingCv(cv)
-                          setEditContent(cv.content?.text || '')
-                          setEditModalOpen(true)
-                        }}
+                      <Link
+                        href={withLocale(`/ucet/edit/${cv._id}`)}
+                        className="text-red-600 text-[15px] underline"
                       >
                         Upravit
-                      </span>
+                      </Link>
                     </li>
                     <li>
                       <span className="text-red-600 text-[15px] underline">Sdílet</span>
@@ -166,54 +138,145 @@ const UcetPage = () => {
 
       <FinalCTA />
 
-      {/* View Modal */}
+      {/* Zobrazit náhled životopisu */}
       {viewModalOpen && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-          <div className="bg-white rounded-lg p-6 h-[400px] max-w-lg w-full flex flex-col items-center relative">
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-lg max-w-[650px] w-full flex flex-col relative shadow-lg">
             <button
               onClick={() => setViewModalOpen(false)}
-              className="absolute top-2 right-4 text-gray-700 hover:text-black"
+              className="absolute top-2 right-4 text-red-500 hover:text-black z-10"
             >
               Zavřít
             </button>
-            <h3 className="text-xl font-bold mb-4 text-secondary">Životopis</h3>
-            <p className="text-primary text-2xl font-semibold whitespace-pre-wrap">
-              {viewContent || 'Žádný obsah.'}
-            </p>
+            <div className="w-full flex flex-col md:flex-row">
+              {/* Left column */}
+              <div className="bg-[#1e2a38] text-white w-full md:w-1/3 p-6 space-y-6 rounded-t-lg md:rounded-l-lg md:rounded-tr-none">
+                {viewContent.photoPreview && (
+                  <div className="flex justify-center">
+                    <img
+                      src={viewContent.photoPreview}
+                      alt="Fotka"
+                      className="w-28 h-28 rounded-full object-cover border-4 border-white"
+                    />
+                  </div>
+                )}
+                <div className="text-sm space-y-1">
+                  <p>
+                    <strong>Telefon:</strong> {viewContent.phone}
+                  </p>
+                  <p>
+                    <strong>Email:</strong> {viewContent.email}
+                  </p>
+                  <p>
+                    <strong>Adresa:</strong> {viewContent.street}, {viewContent.city},{' '}
+                    {viewContent.postalCode}
+                  </p>
+                  <p>
+                    <strong>Web:</strong> {viewContent.website}
+                  </p>
+                  {viewContent.gender && (
+                    <p>
+                      <strong>Pohlaví:</strong> {viewContent.gender}
+                    </p>
+                  )}
+                </div>
+                {viewContent.education?.length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-semibold text-white mb-2 border-b border-gray-500">
+                      EDUKACE
+                    </h3>
+                    {viewContent.education.map((edu: any, i: number) => (
+                      <div key={i} className="text-sm mb-2">
+                        <p className="font-semibold">
+                          {edu.startYear}–{edu.endYear}
+                        </p>
+                        <p>{edu.schoolName}</p>
+                        <p className="italic text-xs text-gray-300">{edu.field}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {viewContent.languages?.length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-semibold text-white mb-2 border-b border-gray-500">
+                      JAZYKY
+                    </h3>
+                    {viewContent.languages.map((lang: any, i: number) => (
+                      <p key={i} className="text-sm">
+                        {lang.language} – {lang.level}
+                      </p>
+                    ))}
+                  </div>
+                )}
+                {Array.isArray(viewContent.drivingLicense) &&
+                  viewContent.drivingLicense.length > 0 && (
+                    <p>
+                      <strong>Řidičský průkaz:</strong> {viewContent.drivingLicense.join(', ')}
+                    </p>
+                  )}
+              </div>
+
+              {/* Right column */}
+              <div className="w-full md:w-2/3 p-8 space-y-6 bg-white rounded-b-lg md:rounded-r-lg md:rounded-bl-none text-black">
+                <div>
+                  <h1 className="text-3xl font-bold text-[#1e2a38]">
+                    {viewContent.firstName} {viewContent.lastName}
+                  </h1>
+                  <p className="text-blue-700 font-semibold uppercase tracking-wide">
+                    {viewContent.titleBefore} {viewContent.titleAfter}
+                  </p>
+                </div>
+                {viewContent.work?.length > 0 && (
+                  <div>
+                    <h2 className="text-lg font-semibold text-[#1e2a38] border-b pb-1 mb-2">
+                      Pracovní zkušenosti
+                    </h2>
+                    {viewContent.work.map((job: any, i: number) => (
+                      <div key={i} className="mb-4">
+                        <div className="flex justify-between text-sm font-semibold">
+                          <span>
+                            {job.position} – {job.employer}
+                          </span>
+                          <span>
+                            {job.start}–{job.end}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-700">{job.activity}</p>
+                        {job.description && (
+                          <p className="text-xs text-gray-500 italic">{job.description}</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {viewContent.certificates?.length > 0 && (
+                  <div>
+                    <h2 className="text-lg font-semibold text-[#1e2a38] border-b pb-1 mb-2">
+                      Kurzy a certifikáty
+                    </h2>
+                    {viewContent.certificates.map((cert: any, i: number) => (
+                      <p key={i} className="text-sm">
+                        {cert.name} –{' '}
+                        <span className="text-gray-600 italic">{cert.description}</span>
+                      </p>
+                    ))}
+                  </div>
+                )}
+                {viewContent.references && (
+                  <div>
+                    <h2 className="text-lg font-semibold text-[#1e2a38] border-b pb-1 mb-2">
+                      Reference
+                    </h2>
+                    <p className="text-sm italic text-gray-700">{viewContent.references}</p>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       )}
 
-      {/* Edit Modal */}
-      {editModalOpen && (
-        <div className="fixed bg-black/50 inset-0 z-50 flex items-center justify-center">
-          <div className="bg-white rounded-lg p-6 max-w-lg w-full relative">
-            <button
-              onClick={() => {
-                setEditModalOpen(false)
-                setEditingCv(null)
-              }}
-              className="absolute top-2 right-4 text-gray-500 hover:text-black"
-            >
-              Zavřít
-            </button>
-            <h3 className="text-xl font-bold text-secondary mb-4">Upravit obsah životopisu</h3>
-            <textarea
-              className="w-full h-64 border border-red-500 rounded p-2 text-sm text-black"
-              value={editContent}
-              onChange={(e) => setEditContent(e.target.value)}
-            />
-            <button
-              onClick={handleSaveContent}
-              className="mt-4 bg-secondary text-white px-4 py-2 rounded"
-            >
-              Uložit změny
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Delete Modal */}
+      {/* Smazat životopis */}
       {deleteModalOpen && cvToDelete && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
           <div className="bg-white rounded-lg p-6 max-w-sm w-full relative text-center">
@@ -233,7 +296,7 @@ const UcetPage = () => {
               </button>
               <button
                 onClick={handleDeleteCv}
-                className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700"
+                className="px-4 py-2 rounded bg-primary text-white hover:bg-red-700"
               >
                 Smazat
               </button>
@@ -242,7 +305,7 @@ const UcetPage = () => {
         </div>
       )}
 
-      {/* Create Modal */}
+      {/* Vytvořit nový životopis */}
       {createModalOpen && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
           <div className="bg-white rounded-lg p-6 max-w-sm w-full relative text-center">
