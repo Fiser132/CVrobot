@@ -6,13 +6,14 @@ import OrangeLink from '../components/ui/orange-link'
 import FinalCTA from '../components/landing-page/FinalCTA'
 import Table from '../components/ui/Table'
 
-type PageProps = {
+interface PageProps {
   params: {
     slug: string
     locale: string
   }
 }
 
+// ✅ Server component: async is fine, but the `params` must NOT be a Promise
 export default async function Page({ params }: PageProps) {
   const { slug, locale } = params
 
@@ -65,7 +66,8 @@ export default async function Page({ params }: PageProps) {
   )
 }
 
-export async function generateStaticParams(): Promise<{ slug: string; locale: string }[]> {
+// ✅ Correct return type for static params
+export async function generateStaticParams() {
   const client = await clientPromise
   const db = client.db('pages')
   const pages = await db.collection('content').find({}).toArray()

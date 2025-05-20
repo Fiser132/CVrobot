@@ -3,20 +3,48 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
+import { useUser } from '@clerk/nextjs'
 import PrimaryButton from './../components/ui/primary-button'
 import FinalCTA from './../components/landing-page/FinalCTA'
-import { useUser } from '@clerk/nextjs'
 
 interface Cv {
   _id: string
   name: string
   date: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   content: Record<string, any>
+}
+
+interface Certificate {
+  name: string
+  description: string
+}
+
+interface Language {
+  language: string
+  level: string
+}
+
+interface WorkExperience {
+  start: string
+  end: string
+  position: string
+  employer: string
+  activity: string
+  description?: string
+}
+
+interface Education {
+  startYear: string
+  endYear: string
+  field: string
+  schoolName: string
 }
 
 const UcetPage = () => {
   const { user } = useUser()
   const [cvs, setCvs] = useState<Cv[]>([])
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [viewContent, setViewContent] = useState<Record<string, any>>({})
   const [viewModalOpen, setViewModalOpen] = useState(false)
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
@@ -138,7 +166,6 @@ const UcetPage = () => {
 
       <FinalCTA />
 
-      {/* Zobrazit náhled životopisu */}
       {viewModalOpen && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white rounded-lg max-w-[650px] w-full flex flex-col relative shadow-lg">
@@ -149,7 +176,6 @@ const UcetPage = () => {
               Zavřít
             </button>
             <div className="w-full flex flex-col md:flex-row">
-              {/* Left column */}
               <div className="bg-[#1e2a38] text-white w-full md:w-1/3 p-6 space-y-6 rounded-t-lg md:rounded-l-lg md:rounded-tr-none">
                 {viewContent.photoPreview && (
                   <div className="flex justify-center">
@@ -180,12 +206,13 @@ const UcetPage = () => {
                     </p>
                   )}
                 </div>
-                {viewContent.education?.length > 0 && (
+
+                {Array.isArray(viewContent.education) && (
                   <div>
                     <h3 className="text-lg font-semibold text-white mb-2 border-b border-gray-500">
                       EDUKACE
                     </h3>
-                    {viewContent.education.map((edu: any, i: number) => (
+                    {(viewContent.education as Education[]).map((edu, i) => (
                       <div key={i} className="text-sm mb-2">
                         <p className="font-semibold">
                           {edu.startYear}–{edu.endYear}
@@ -196,18 +223,20 @@ const UcetPage = () => {
                     ))}
                   </div>
                 )}
-                {viewContent.languages?.length > 0 && (
+
+                {Array.isArray(viewContent.languages) && (
                   <div>
                     <h3 className="text-lg font-semibold text-white mb-2 border-b border-gray-500">
                       JAZYKY
                     </h3>
-                    {viewContent.languages.map((lang: any, i: number) => (
+                    {(viewContent.languages as Language[]).map((lang, i) => (
                       <p key={i} className="text-sm">
                         {lang.language} – {lang.level}
                       </p>
                     ))}
                   </div>
                 )}
+
                 {Array.isArray(viewContent.drivingLicense) &&
                   viewContent.drivingLicense.length > 0 && (
                     <p>
@@ -216,7 +245,6 @@ const UcetPage = () => {
                   )}
               </div>
 
-              {/* Right column */}
               <div className="w-full md:w-2/3 p-8 space-y-6 bg-white rounded-b-lg md:rounded-r-lg md:rounded-bl-none text-black">
                 <div>
                   <h1 className="text-3xl font-bold text-[#1e2a38]">
@@ -226,12 +254,13 @@ const UcetPage = () => {
                     {viewContent.titleBefore} {viewContent.titleAfter}
                   </p>
                 </div>
-                {viewContent.work?.length > 0 && (
+
+                {Array.isArray(viewContent.work) && (
                   <div>
                     <h2 className="text-lg font-semibold text-[#1e2a38] border-b pb-1 mb-2">
                       Pracovní zkušenosti
                     </h2>
-                    {viewContent.work.map((job: any, i: number) => (
+                    {(viewContent.work as WorkExperience[]).map((job, i) => (
                       <div key={i} className="mb-4">
                         <div className="flex justify-between text-sm font-semibold">
                           <span>
@@ -249,12 +278,13 @@ const UcetPage = () => {
                     ))}
                   </div>
                 )}
-                {viewContent.certificates?.length > 0 && (
+
+                {Array.isArray(viewContent.certificates) && (
                   <div>
                     <h2 className="text-lg font-semibold text-[#1e2a38] border-b pb-1 mb-2">
                       Kurzy a certifikáty
                     </h2>
-                    {viewContent.certificates.map((cert: any, i: number) => (
+                    {(viewContent.certificates as Certificate[]).map((cert, i) => (
                       <p key={i} className="text-sm">
                         {cert.name} –{' '}
                         <span className="text-gray-600 italic">{cert.description}</span>
@@ -262,6 +292,7 @@ const UcetPage = () => {
                     ))}
                   </div>
                 )}
+
                 {viewContent.references && (
                   <div>
                     <h2 className="text-lg font-semibold text-[#1e2a38] border-b pb-1 mb-2">
@@ -276,7 +307,6 @@ const UcetPage = () => {
         </div>
       )}
 
-      {/* Smazat životopis */}
       {deleteModalOpen && cvToDelete && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
           <div className="bg-white rounded-lg p-6 max-w-sm w-full relative text-center">
@@ -305,7 +335,6 @@ const UcetPage = () => {
         </div>
       )}
 
-      {/* Vytvořit nový životopis */}
       {createModalOpen && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
           <div className="bg-white rounded-lg p-6 max-w-sm w-full relative text-center">
