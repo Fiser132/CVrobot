@@ -1,5 +1,5 @@
 // components/ui/Text.tsx
-import { cva, cn } from '../../../lib/utils'
+import { cva, cn } from '../../../../lib/utils'
 import { ReactNode } from 'react'
 
 type TextProps = {

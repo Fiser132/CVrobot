@@ -37,7 +37,9 @@ export default function Blog() {
               className="rounded h-full w-[120px] md:h-[174px] md:w-[250px]"
             />
             <div className="flex flex-col  justify-between md:justify-center gap-0 lg:gap-5 h-full">
-              <Text size="md" className='text-[14px] md:text-[20px]'>{article.title}</Text>
+              <Text size="md" className="text-[14px] md:text-[20px]">
+                {article.title}
+              </Text>
               <Link
                 href="#"
                 className="text-primary text-[13px] md:text-[15px] font-semibold flex leading-[1.8]  items-center gap-3 underline"

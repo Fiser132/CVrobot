@@ -4,11 +4,7 @@ export default function Motivation() {
   return (
     <section className="bg-white py-10 px-4 lg:px-0">
       <div className=" mx-auto flex flex-col xl:flex-row gap-10 lg:gap-20 items-center">
-        <img
-          src="/girl.png"
-          alt="Motivace"
-          className="w-full max-w-[900px] h-auto object-cover rounded"
-        />
+        <img src="/girl.png" alt="Motivace" className="w-full max-w-[900px] h-auto object-cover" />
 
         <div className="max-w-full lg:max-w-[640px] px-4 flex flex-col gap-7">
           <Text size="xl" color="secondary">
