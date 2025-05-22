@@ -1,3 +1,4 @@
+// app/[locale]/[slug]/page.tsx
 import { notFound } from 'next/navigation'
 import clientPromise from '@/lib/mongodb'
 import ReactMarkdown from 'react-markdown'
@@ -6,15 +7,13 @@ import OrangeLink from '../components/ui/orange-link'
 import FinalCTA from '../components/landing-page/FinalCTA'
 import Table from '../components/ui/Table'
 
-interface PageProps {
-  params: {
-    slug: string
-    locale: string
-  }
+type Params = {
+  slug: string
+  locale: string
 }
 
-// ✅ Server component: async is fine, but the `params` must NOT be a Promise
-export default async function Page({ params }: PageProps) {
+// ✅ Correct Page function with inferred params
+export default async function Page({ params }: { params: Params }) {
   const { slug, locale } = params
 
   const client = await clientPromise
@@ -49,7 +48,9 @@ export default async function Page({ params }: PageProps) {
             </Text>
           ),
           p: ({ children }) => <Text>{children}</Text>,
-          a: ({ children, href }) => <OrangeLink href={href ?? '#'}>{children}</OrangeLink>,
+          a: ({ children, href }) => (
+            <OrangeLink href={href ?? '#'}>{children}</OrangeLink>
+          ),
           ul: ({ children }) => (
             <ul className="list-disc list-inside space-y-2 text-[16px] marker:text-primary">
               {children}
@@ -66,8 +67,10 @@ export default async function Page({ params }: PageProps) {
   )
 }
 
-// ✅ Correct return type for static params
-export async function generateStaticParams() {
+// ✅ Correct generateStaticParams with explicit return type
+export async function generateStaticParams(): Promise<
+  { locale: string; slug: string }[]
+> {
   const client = await clientPromise
   const db = client.db('pages')
   const pages = await db.collection('content').find({}).toArray()

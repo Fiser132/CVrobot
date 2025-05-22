@@ -9,11 +9,11 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
 
     // Validate the ID format
     let objectId
-    try {
-      objectId = new ObjectId(params.id)
-    } catch (error) {
-      return NextResponse.json({ message: 'Invalid ID format' }, { status: 400 })
-    }
+try {
+  objectId = new ObjectId(params.id)
+} catch {
+  return NextResponse.json({ message: 'Invalid ID format' }, { status: 400 })
+}
 
     // Try to find the CV document
     const cv = await db.collection('cvs').findOne({ _id: objectId })

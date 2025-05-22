@@ -11,7 +11,6 @@ interface Cv {
   _id: string
   name: string
   date: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   content: Record<string, any>
 }
 
@@ -44,7 +43,6 @@ interface Education {
 const UcetPage = () => {
   const { user } = useUser()
   const [cvs, setCvs] = useState<Cv[]>([])
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [viewContent, setViewContent] = useState<Record<string, any>>({})
   const [viewModalOpen, setViewModalOpen] = useState(false)
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)

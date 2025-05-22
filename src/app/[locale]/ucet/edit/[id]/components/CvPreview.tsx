@@ -45,9 +45,9 @@ const CvPreview = ({ cvData, photoPreview, handleSave }: CvPreviewProps) => {
         <button
           onClick={() => setSelectedTemplate((prev) => Math.max(prev - 1, 0))}
           disabled={selectedTemplate === 0}
-          className="text-white px-3 py-1 rounded bg-gray-600 hover:bg-gray-500 disabled:opacity-40"
+          className="text-white px-3 py-1 rounded-full bg-gray-600 hover:bg-gray-500 disabled:opacity-40"
         >
-          ◀
+          -
         </button>
         <span className="text-white font-semibold">
           {selectedTemplate + 1} / {templates.length}
@@ -55,9 +55,9 @@ const CvPreview = ({ cvData, photoPreview, handleSave }: CvPreviewProps) => {
         <button
           onClick={() => setSelectedTemplate((prev) => Math.min(prev + 1, templates.length - 1))}
           disabled={selectedTemplate === templates.length - 1}
-          className="text-white px-3 py-1 rounded bg-gray-600 hover:bg-gray-500 disabled:opacity-40"
+          className="text-white px-3 py-1  rounded-full border border-white hover:bg-gray-500 disabled:opacity-40"
         >
-          ▶
+          -
         </button>
       </div>
     </div>
