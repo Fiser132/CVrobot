@@ -7,13 +7,11 @@ import OrangeLink from '../components/ui/orange-link'
 import FinalCTA from '../components/landing-page/FinalCTA'
 import Table from '../components/ui/Table'
 
-type Params = {
-  slug: string
-  locale: string
-}
-
-// ✅ Correct Page function with inferred params
-export default async function Page({ params }: { params: Params }) {
+export default async function Page({
+  params,
+}: {
+  params: { slug: string; locale: string }
+}) {
   const { slug, locale } = params
 
   const client = await clientPromise
@@ -29,7 +27,9 @@ export default async function Page({ params }: { params: Params }) {
   }
 
   return (
+         <div>
     <main className="bg-white text-black px-4 py-20 pb-44 flex flex-col gap-5 max-w-5xl mx-auto leading-relaxed prose prose-lg">
+ 
       <ReactMarkdown
         components={{
           h1: ({ children }) => (
@@ -62,15 +62,15 @@ export default async function Page({ params }: { params: Params }) {
       >
         {page.body}
       </ReactMarkdown>
-      <FinalCTA />
+
+
     </main>
+          <FinalCTA />
+          </div>
   )
 }
 
-// ✅ Correct generateStaticParams with explicit return type
-export async function generateStaticParams(): Promise<
-  { locale: string; slug: string }[]
-> {
+export async function generateStaticParams() {
   const client = await clientPromise
   const db = client.db('pages')
   const pages = await db.collection('content').find({}).toArray()
