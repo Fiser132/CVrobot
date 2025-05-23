@@ -16,7 +16,7 @@ interface Cv {
 
 interface Certificate {
   name: string
-  description: string
+  description: string;
 }
 
 interface Language {
