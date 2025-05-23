@@ -52,9 +52,7 @@ export default async function Page({ params }: PageProps) {
               </Text>
             ),
             p: ({ children }) => <Text>{children}</Text>,
-            a: ({ children, href }) => (
-              <OrangeLink href={href ?? '#'}>{children}</OrangeLink>
-            ),
+            a: ({ children, href }) => <OrangeLink href={href ?? '#'}>{children}</OrangeLink>,
             ul: ({ children }) => (
               <ul className="list-disc list-inside space-y-2 text-[16px] marker:text-primary">
                 {children}

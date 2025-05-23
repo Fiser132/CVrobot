@@ -47,11 +47,7 @@ const DynamicSection = ({ section, fields, defaults }: DynamicSectionProps) => {
         </div>
       ))}
 
-      <button
-        type="button"
-        className="text-sm text-primary hover:underline"
-        onClick={handleAdd}
-      >
+      <button type="button" className="text-sm text-primary hover:underline" onClick={handleAdd}>
         + Přidat další položku
       </button>
     </section>

@@ -39,7 +39,7 @@ const EditCvForm = ({
     <div className="bg-white shadow-lg p-6 md:p-10 lg:p-14 space-y-10 overflow-y-auto rounded-l-xl">
       <CvFormContext.Provider value={cvData}>
         <form ref={ref} onSubmit={handleSubmit} className="space-y-10">
-        <input
+          <input
             name="cvName"
             id="cvName"
             className="text-2xl font-bold w-full bg-transparent border-b-2 border-gray-300 focus:outline-none focus:border-blue-500"
@@ -48,11 +48,9 @@ const EditCvForm = ({
           />
 
           <section className="space-y-6">
-            <h2 className="text-[24px] font-semibold text-secondary">
-              1. Vaše osobní údaje
-            </h2>
+            <h2 className="text-[24px] font-semibold text-secondary">1. Vaše osobní údaje</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8">
-              <InputWithLabel name="email"  />
+              <InputWithLabel name="email" />
 
               <RadioGroup
                 name="gender"
@@ -63,25 +61,15 @@ const EditCvForm = ({
                 ]}
               />
 
-              <InputWithLabel name="firstName"  />
-              <InputWithLabel name="lastName"  />
+              <InputWithLabel name="firstName" />
+              <InputWithLabel name="lastName" />
 
               <div className="flex gap-8">
-                <InputWithLabel
-                  name="titleBefore"
-              
-                />
-                <InputWithLabel
-                  name="titleAfter"
-                 
-                />
+                <InputWithLabel name="titleBefore" />
+                <InputWithLabel name="titleAfter" />
               </div>
 
-              <InputWithLabel
-                name="birthDate"
-            
-                type="date"
-              />
+              <InputWithLabel name="birthDate" type="date" />
 
               <SelectWithLabel
                 name="maritalStatus"
@@ -101,17 +89,10 @@ const EditCvForm = ({
                 onPreviewChange={setPhotoPreview}
               />
 
-              <InputWithLabel
-                name="street"
-         
-              />
+              <InputWithLabel name="street" />
 
               <div className="flex gap-5">
-                <InputWithLabel
-                  name="postalCode"
-               
-                  type="text"
-                />
+                <InputWithLabel name="postalCode" type="text" />
                 <InputWithLabel name="city" />
               </div>
 
@@ -128,19 +109,14 @@ const EditCvForm = ({
                 options={[{ value: '', label: 'Vyberte' }]}
               />
 
-              <InputWithLabel name="phone"  />
+              <InputWithLabel name="phone" />
               <InputWithLabel name="website" />
             </div>
           </section>
 
           <DynamicSection
             section="education"
-            fields={[
-              'startYear',
-              'endYear',
-              'field',
-              'schoolName',
-            ]}
+            fields={['startYear', 'endYear', 'field', 'schoolName']}
             defaults={{
               startYear: '',
               endYear: '',
@@ -151,14 +127,7 @@ const EditCvForm = ({
 
           <DynamicSection
             section="work"
-            fields={[
-              'start',
-              'end',
-              'employer',
-              'activity',
-              'position',
-              'description',
-            ]}
+            fields={['start', 'end', 'employer', 'activity', 'position', 'description']}
             defaults={{
               start: '',
               end: '',
@@ -181,26 +150,16 @@ const EditCvForm = ({
             defaults={{ language: '', level: '' }}
           />
 
-          <TextareaWithLabel
-            name="references"
-            label="Reference"
-            placeholder="Reference"
-          />
+          <TextareaWithLabel name="references" label="Reference" placeholder="Reference" />
 
           <CheckboxGroup
             name="drivingLicense"
             label="Řidičský průkaz"
-            options={[
-              'A',
-              'B',
-              'C',
-              'D',
-              'E',
-              'T',
-            ].map((group) => ({ value: group, label: group }))}
+            options={['A', 'B', 'C', 'D', 'E', 'T'].map((group) => ({
+              value: group,
+              label: group,
+            }))}
           />
-
-   
         </form>
       </CvFormContext.Provider>
     </div>

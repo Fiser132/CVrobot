@@ -7,13 +7,12 @@ interface Option {
 }
 
 interface SelectWithLabelProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
-  /** The HTML name and id for the select */
   name: string
-  /** Visible label text */
+
   label: string
-  /** Options to render */
+
   options: Option[]
-  /** Initial selected value */
+
   defaultValue?: string
 }
 

@@ -1,16 +1,14 @@
-// components/FileInputWithPreview.tsx
 import React, { useRef } from 'react'
 
 interface FileInputWithPreviewProps {
-  /** HTML input name attribute */
   name: string
-  /** Visible label text for the input */
+
   label: string
-  /** Accept attribute for file types */
+
   accept?: string
-  /** Current preview URL or null */
+
   preview: string | null
-  /** Callback when preview URL should update */
+
   onPreviewChange: (url: string | null) => void
   className?: string
 }

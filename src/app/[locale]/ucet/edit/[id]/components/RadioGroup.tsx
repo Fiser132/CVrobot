@@ -7,17 +7,16 @@ interface Option {
 }
 
 interface RadioGroupProps {
-  /** HTML name attribute shared by all radio inputs */
   name: string
-  /** Visible legend text for the group */
+
   label: string
-  /** Array of options to render */
+
   options: Option[]
-  /** Container class override */
+
   className?: string
-  /** Input class override */
+
   inputClassName?: string
-  /** Label class override */
+
   labelClassName?: string
 }
 
@@ -40,10 +39,7 @@ const RadioGroup: React.FC<RadioGroupProps> = ({
     <legend className={labelClassName || defaultLegendClass}>{label}</legend>
     <div className={defaultOptionsContainer}>
       {options.map((opt) => (
-        <label
-          key={opt.value}
-          className={defaultLabelClass}
-        >
+        <label key={opt.value} className={defaultLabelClass}>
           <input
             type="radio"
             name={name}

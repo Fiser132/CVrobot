@@ -2,10 +2,7 @@ import { NextResponse } from 'next/server'
 import clientPromise from '@/lib/mongodb'
 import { ObjectId } from 'mongodb'
 
-export async function GET(
-  request: Request,
-  context: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
   // unwrap the params promise
   const { id } = await context.params
 
@@ -18,10 +15,7 @@ export async function GET(
     try {
       objectId = new ObjectId(id)
     } catch {
-      return NextResponse.json(
-        { message: 'Invalid ID format' },
-        { status: 400 }
-      )
+      return NextResponse.json({ message: 'Invalid ID format' }, { status: 400 })
     }
 
     // Try to find the CV document
@@ -41,9 +35,6 @@ export async function GET(
     )
   } catch (error) {
     console.error('Error fetching CV:', error)
-    return NextResponse.json(
-      { message: 'Server Error' },
-      { status: 500 }
-    )
+    return NextResponse.json({ message: 'Server Error' }, { status: 500 })
   }
 }

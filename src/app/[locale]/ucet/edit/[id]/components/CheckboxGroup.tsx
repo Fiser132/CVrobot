@@ -7,17 +7,16 @@ interface Option {
 }
 
 interface CheckboxGroupProps {
-  /** HTML name attribute for each checkbox */
   name: string
-  /** Visible legend text for the group */
+
   label: string
-  /** Array of checkbox options */
+
   options: Option[]
-  /** Container class name override */
+
   className?: string
-  /** Checkbox input class override */
+
   checkboxClassName?: string
-  /** Label text class override */
+
   labelClassName?: string
 }
 

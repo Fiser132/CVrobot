@@ -2,15 +2,14 @@
 import React from 'react'
 
 interface TextareaWithLabelProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
-  /** HTML name and id for the textarea */
   name: string
-  /** Visible label text */
+
   label: string
-  /** Placeholder text */
+
   placeholder?: string
-  /** Initial value */
+
   defaultValue?: string
-  /** Custom CSS class for textarea */
+
   className?: string
 }
 
