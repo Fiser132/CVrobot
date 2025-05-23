@@ -21,11 +21,16 @@ const InputWithLabel = ({
 
   const labelText =
     placeholder ||
-    name.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ').replace(/^./, (c) => c.toUpperCase())
+    name
+      .replace(/([A-Z])/g, ' $1')
+      .replace(/_/g, ' ')
+      .replace(/^./, (c) => c.toUpperCase())
 
   return (
     <div className="flex flex-col gap-3">
-      <label htmlFor={name} className="text-sm text-[#7C8088]">{labelText}</label>
+      <label htmlFor={name} className="text-sm text-[#7C8088]">
+        {labelText}
+      </label>
       <input
         id={name}
         name={name}

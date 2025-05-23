@@ -66,9 +66,7 @@ const TemplateModern = ({ cvData, photoPreview }: TemplateModernProps) => (
               {job.start} – {job.end}
             </p>
             <p className="text-sm text-gray-800">{job.activity}</p>
-            {job.description && (
-              <p className="text-xs text-gray-500 italic">{job.description}</p>
-            )}
+            {job.description && <p className="text-xs text-gray-500 italic">{job.description}</p>}
           </div>
         ))}
       </Section>
