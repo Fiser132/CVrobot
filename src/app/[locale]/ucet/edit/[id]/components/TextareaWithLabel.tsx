@@ -1,15 +1,12 @@
 // components/TextareaWithLabel.tsx
 import React from 'react'
+import { useCvFormData } from './CvFormContext'
 
 interface TextareaWithLabelProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   name: string
-
-  label: string
-
+  label?: string
   placeholder?: string
-
   defaultValue?: string
-
   className?: string
 }
 
@@ -23,20 +20,35 @@ const TextareaWithLabel: React.FC<TextareaWithLabelProps> = ({
   defaultValue,
   className,
   ...rest
-}) => (
-  <div className="flex flex-col">
-    <label htmlFor={name} className="text-sm font-medium text-gray-700 mb-1">
-      {label}
-    </label>
-    <textarea
-      id={name}
-      name={name}
-      placeholder={placeholder}
-      defaultValue={defaultValue}
-      className={className || defaultTextareaClass}
-      {...rest}
-    />
-  </div>
-)
+}) => {
+  const cvData = useCvFormData()
+
+  // Determine label text: use provided label or generate from name
+  const labelText =
+    label ||
+    name
+      .replace(/([A-Z])/g, ' $1')
+      .replace(/_/g, ' ')
+      .replace(/^./, (c) => c.toUpperCase())
+
+  const initial = cvData[name] as string | undefined
+  const value = initial !== undefined ? initial : defaultValue ?? ''
+
+  return (
+    <div className="flex flex-col">
+      <label htmlFor={name} className="text-sm font-medium text-gray-700 mb-1">
+        {labelText}
+      </label>
+      <textarea
+        id={name}
+        name={name}
+        placeholder={placeholder || labelText}
+        defaultValue={value}
+        className={className || defaultTextareaClass}
+        {...rest}
+      />
+    </div>
+  )
+}
 
 export default TextareaWithLabel

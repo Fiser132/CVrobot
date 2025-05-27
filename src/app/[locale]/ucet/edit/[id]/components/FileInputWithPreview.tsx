@@ -22,7 +22,6 @@ const FileInputWithPreview: React.FC<FileInputWithPreviewProps> = ({
   className,
 }) => {
   const inputRef = useRef<HTMLInputElement>(null)
-//fix
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
