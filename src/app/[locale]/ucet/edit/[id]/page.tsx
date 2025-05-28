@@ -1,16 +1,13 @@
+// src/app/[locale]/edit-cv/EditCvPage.tsx
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { z } from 'zod'
-import { cvSchema } from './components/validation'
 import EditCvForm from './components/EditCvForm'
 import CvPreview from './components/CvPreview'
 import SuccessOverlay from './components/SuccessOverlay'
 
-type Errors = Record<string,string>
-
-export default function EditCvPage() {
+const EditCvPage = () => {
   const params = useParams()
   const router = useRouter()
   const id = params.id as string
@@ -18,50 +15,66 @@ export default function EditCvPage() {
 
   const formRef = useRef<HTMLFormElement>(null)
   const [saved, setSaved] = useState(false)
-  const [photoPreview, setPhotoPreview] = useState<string|null>(null)
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
   const [cvData, setCvData] = useState<any>({})
-  const [errors, setErrors] = useState<Errors>({})
 
-  // fetch existing CV…
   useEffect(() => {
-    async function fetchCv() {
+    const fetchCv = async () => {
       const res = await fetch(`/api/cvs/${id}`)
-      if (!res.ok) return
-      const { content } = await res.json()
-      setCvData(content)
-      if (content.photoPreview) setPhotoPreview(content.photoPreview)
+      if (!res.ok) return console.error('Failed to fetch CV:', res.status)
+      const data = await res.json()
+      setCvData(data.content)
+      if (data.content.photoPreview) setPhotoPreview(data.content.photoPreview)
     }
     if (id) fetchCv()
   }, [id])
 
-  // when CvPreview’s Save is clicked…
-  const handleValidation = (): boolean => {
-    const fd = new FormData(formRef.current!)
-    const values: Record<string,string> = {}
-    fd.forEach((v,k) => { values[k] = v as string })
+  const updateCvDataFromForm = () => {
+    if (!formRef.current) return
+    const formData = new FormData(formRef.current)
+    const updatedData: Record<string, any> = {}
 
-    try {
-      cvSchema.parse(values)
-      setErrors({})            // clear old errors
-      return true
-    } catch (err: unknown) {
-      if (err instanceof z.ZodError) {
-        const newErr: Errors = {}
-        err.errors.forEach(e => {
-          const key = e.path[0] as string
-          newErr[key] = e.message
-        })
-        setErrors(newErr)
+    formData.forEach((value, key) => {
+      if (key.includes('[')) {
+        const keys = key.replace(/\]/g, '').split('[')
+        if (!updatedData[keys[0]]) updatedData[keys[0]] = []
+        const index = Number(keys[1])
+        const field = keys[2]
+        if (!updatedData[keys[0]][index]) updatedData[keys[0]][index] = {}
+        updatedData[keys[0]][index][field] = value
+      } else if (key === 'drivingLicense') {
+        if (!updatedData[key]) updatedData[key] = []
+        updatedData[key].push(value)
+      } else {
+        updatedData[key] = value
       }
-      return false
-    }
+    })
+
+    if (photoPreview) updatedData.photoPreview = photoPreview
+    setCvData(updatedData)
   }
 
-  // after validation passes, actually save…
   const handleSave = async () => {
-    const fd = new FormData(formRef.current!)
-    const content: any = {}
-    fd.forEach((v,k) => { /* …same flatten logic as before… */ })
+    if (!formRef.current) return
+    const formDataInstance = new FormData(formRef.current)
+    const content: Record<string, any> = {}
+
+    formDataInstance.forEach((value, key) => {
+      if (key.includes('[')) {
+        const keys = key.replace(/\]/g, '').split('[')
+        if (!content[keys[0]]) content[keys[0]] = []
+        const index = Number(keys[1])
+        const field = keys[2]
+        if (!content[keys[0]][index]) content[keys[0]][index] = {}
+        content[keys[0]][index][field] = value
+      } else if (key === 'drivingLicense') {
+        if (!content[key]) content[key] = []
+        content[key].push(value)
+      } else {
+        content[key] = value
+      }
+    })
+
     if (photoPreview) content.photoPreview = photoPreview
 
     await fetch('/api/cvs/update', {
@@ -77,15 +90,6 @@ export default function EditCvPage() {
     }, 1500)
   }
 
-  // helper to clear a single field’s error on change
-  const clearError = (field: string) => {
-    setErrors(prev => {
-      const c = { ...prev }
-      delete c[field]
-      return c
-    })
-  }
-
   return (
     <main className="grid grid-cols-1 lg:grid-cols-2 min-h-screen text-black bg-[#f5f6fa] absolute top-0 w-full">
       {saved && <SuccessOverlay />}
@@ -93,21 +97,16 @@ export default function EditCvPage() {
       <EditCvForm
         formRef={formRef}
         cvData={cvData}
+        setCvData={setCvData}
         photoPreview={photoPreview}
         setPhotoPreview={setPhotoPreview}
-        updateCvDataFromForm={() => {
-          // you can keep your existing updateCvDataFromForm here
-        }}
-        errors={errors}
-        clearError={clearError}
-      />
-
-      <CvPreview
-        cvData={cvData}
-        photoPreview={photoPreview}
-        handleValidation={handleValidation}
+        updateCvDataFromForm={updateCvDataFromForm}
         handleSave={handleSave}
       />
+
+      <CvPreview cvData={cvData} photoPreview={photoPreview} handleSave={handleSave} />
     </main>
   )
 }
+
+export default EditCvPage

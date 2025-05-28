@@ -1,5 +1,5 @@
-// src/app/[locale]/ucet/edit/[id]/components/InputWithLabel.tsx
 'use client'
+
 import { useCvFormData } from './CvFormContext'
 import React from 'react'
 
@@ -8,7 +8,8 @@ interface InputWithLabelProps
   name: string
   placeholder?: string
   inputClass?: string
-  error?: string        // ← accept an optional error message
+  error?: string
+  inputRef?: React.Ref<HTMLInputElement>
 }
 
 const defaultInputClass =
@@ -20,6 +21,7 @@ export default function InputWithLabel({
   type = 'text',
   inputClass = defaultInputClass,
   error,
+  inputRef,
   ...rest
 }: InputWithLabelProps) {
   const cvData = useCvFormData()
@@ -36,18 +38,21 @@ export default function InputWithLabel({
       <label htmlFor={name} className="text-sm text-[#7C8088]">
         {labelText}
       </label>
-      <input
-        id={name}
-        name={name}
-        type={type}
-        placeholder={labelText}
-        defaultValue={cvData[name] || ''}
-        className={inputClass + (error ? ' border-red-500' : '')}
-        {...rest}
-      />
-      {error && (
-        <p className="text-red-500 text-sm">{error}</p>
-      )}
+      <div className="flex flex-col gap-1">
+        <input
+          id={name}
+          name={name}
+          type={type}
+          placeholder={labelText}
+          defaultValue={cvData[name] || ''}
+          className={inputClass + (error ? ' border-red-500' : '')}
+          ref={inputRef}
+          {...rest}
+        />
+        {error && (
+          <p className="text-red-500 text-sm mt-1">{error}</p>
+        )}
+      </div>
     </div>
   )
 }

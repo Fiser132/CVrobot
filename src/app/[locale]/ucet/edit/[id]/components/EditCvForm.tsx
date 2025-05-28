@@ -1,7 +1,5 @@
-// src/app/[locale]/ucet/edit/[id]/components/EditCvForm.tsx
-'use client'
-
-import { RefObject, useRef, useState } from 'react'
+// EditCvForm.tsx
+import { RefObject, useRef,useState  } from 'react'
 import InputWithLabel from './InputWithLabel'
 import SelectWithLabel from './SelectWithLabel'
 import RadioGroup from './RadioGroup'
@@ -10,231 +8,178 @@ import TextareaWithLabel from './TextareaWithLabel'
 import CheckboxGroup from './CheckboxGroup'
 import DynamicSection from './DynamicSection'
 import { CvFormContext } from './CvFormContext'
+import { cvSchema } from './validation'
 
 interface EditCvFormProps {
   formRef: RefObject<HTMLFormElement | null>
   photoPreview: string | null
   setPhotoPreview: (url: string | null) => void
-  updateCvDataFromForm: () => void
+  handleSave: (formData: FormData) => void
   cvData: Record<string, any>
-  errors: Record<string, string>
-  clearError: (field: string) => void
-  handleValidation: () => boolean  // new: validate step-1 fields
+  setCvData: React.Dispatch<React.SetStateAction<Record<string, any>>>
+  updateCvDataFromForm: () => void
 }
 
-export default function EditCvForm({
+const EditCvForm = ({
   formRef,
   photoPreview,
   setPhotoPreview,
-  updateCvDataFromForm,
+  handleSave,
   cvData,
-  errors,
-  clearError,
-}: EditCvFormProps) {
+}: EditCvFormProps) => {
   const internalFormRef = useRef<HTMLFormElement | null>(null)
   const ref = formRef || internalFormRef
-  const [step, setStep] = useState(1)
 
-  const onContinue = () => {
-    // Optionally: validate required personal fields here
-    setStep(2)
+  const [step, setStep] = useState(1)
+const [errors, setErrors] = useState<Record<string, string>>({})
+
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    const formData = new FormData(ref.current!)
+    handleSave(formData)
   }
 
+const handleNextStep = () => {
+  const formData = new FormData(ref.current!)
+  const data = Object.fromEntries(formData.entries())
+  const result = cvSchema.safeParse(data)
+
+  if (!result.success) {
+    const fieldErrors = result.error.flatten().fieldErrors
+    setErrors({
+      firstName: fieldErrors.firstName?.[0] ?? '',
+      lastName: fieldErrors.lastName?.[0] ?? '',
+      email: fieldErrors.email?.[0] ?? '',
+      birthDate: fieldErrors.birthDate?.[0] ?? '',
+      phone: fieldErrors.phone?.[0] ?? '',
+    })
+
+  } else {
+    setErrors({})
+    setStep(2)
+  }
+}
+
+
   return (
-    <div className="bg-white shadow-lg p-6 md:p-10 lg:p-14 space-y-10 rounded-l-xl w-1/2 absolute top-0 overflow-y-auto">
+    <div className="bg-white shadow-lg p-6 md:p-10 lg:p-14 space-y-10 overflow-y-auto rounded-l-xl">
       <CvFormContext.Provider value={cvData}>
-        <form
-          ref={ref}
-          onChange={updateCvDataFromForm}
-          className="space-y-10"
-        >
-          {/* Step 1: Personal Details */}
-          {step === 1 && (
-            <section className="space-y-6">
-              <h2 className="text-[24px] font-semibold text-secondary">
-                1. Vaše osobní údaje
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8">
-                <InputWithLabel
-                  name="cvName"
-                  placeholder="Název životopisu"
-                  inputClass="text-2xl font-bold w-full bg-transparent border-b-2 border-gray-300 focus:outline-none focus:border-blue-500"
-                  onChange={() => clearError('cvName')}
-                  error={errors.cvName}
-                />
-                <InputWithLabel
-                  name="firstName"
-                  placeholder="Jméno"
-                  onChange={() => clearError('firstName')}
-                  error={errors.firstName}
-                />
-                <InputWithLabel
-                  name="lastName"
-                  placeholder="Příjmení"
-                  onChange={() => clearError('lastName')}
-                  error={errors.lastName}
-                />
-                <InputWithLabel
-                  name="email"
-                  type="email"
-                  onChange={() => clearError('email')}
-                  error={errors.email}
-                />
-                <div className="flex flex-col gap-1">
-                  <label htmlFor="gender" className="text-sm text-[#7C8088]">Pohlaví</label>
-                  <RadioGroup
-                    name="gender"
-                    label="Pohlaví"
-                    options={[
-                      { label: 'Muž', value: 'muž' },
-                      { label: 'Žena', value: 'žena' },
-                    ]}
-                    onChange={() => clearError('gender')}
-                  />
-                  {errors.gender && <p className="text-red-500 text-sm">{errors.gender}</p>}
-                </div>
-                <InputWithLabel
-                  name="birthDate"
-                  type="date"
-                  onChange={() => clearError('birthDate')}
-                  error={errors.birthDate}
-                />
+        <form ref={ref} onSubmit={handleSubmit} className="space-y-10">
+          <input
+            name="cvName"
+            id="cvName"
+            className="text-2xl font-bold w-full bg-transparent border-b-2 border-gray-300 focus:outline-none focus:border-blue-500"
+            placeholder="Název životopisu"
+            defaultValue=""
+          />
+
+          {/* Osobní údaje (Step 1) */}
+          <section className="space-y-6">
+            <h2 className="text-[24px] font-semibold text-secondary">1. Vaše osobní údaje</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8">
+            <InputWithLabel name="email" error={errors.email} />
+              <RadioGroup
+                name="gender"
+                label="Pohlaví *"
+                options={[
+                  { label: 'Muž', value: 'muž' },
+                  { label: 'Žena', value: 'žena' },
+                ]}
+              />
+              <InputWithLabel name="firstName" error={errors.firstName}/>
+         <InputWithLabel name="lastName" error={errors.lastName} />
+              <div className="flex gap-8">
+                <InputWithLabel name="titleBefore" />
+                <InputWithLabel name="titleAfter" />
               </div>
-   
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8">
-                  <SelectWithLabel
-                    name="maritalStatus"
-                    label="Rodinný stav"
-                    options={[
-                      { value: '', label: 'Vyberte' },
-                      { value: 'svobodný', label: 'Svobodný' },
-                      { value: 'ženatý', label: 'Ženatý' },
-                    ]}
-                    onChange={() => clearError('maritalStatus')}
-                  />
-                  {errors.maritalStatus && <p className="text-red-500 text-sm">{errors.maritalStatus}</p>}
-                  <FileInputWithPreview
-                    name="photo"
-                    label="Fotografie"
-                    accept="image/*"
-                    preview={photoPreview}
-                    onPreviewChange={setPhotoPreview}
-                  />
-                  <InputWithLabel
-                    name="street"
-                    onChange={() => clearError('street')}
-                    error={errors.street}
-                  />
-                  <InputWithLabel
-                    name="postalCode"
-                    placeholder="PSČ"
-                    onChange={() => clearError('postalCode')}
-                    error={errors.postalCode}
-                  />
-                  <InputWithLabel
-                    name="city"
-                    onChange={() => clearError('city')}
-                    error={errors.city}
-                  />
-                  <SelectWithLabel
-                    name="country"
-                    label="Stát"
-                    options={[
-                      { value: 'Česká republika', label: 'Česká republika' },
-                      { value: 'Slovensko', label: 'Slovensko' },
-                    ]}
-                    defaultValue="Česká republika"
-                    onChange={() => clearError('country')}
-                  />
-                  {errors.country && <p className="text-red-500 text-sm">{errors.country}</p>}
-                  <SelectWithLabel
-                    name="region"
-                    label="Kraj"
-                    options={[{ value: '', label: 'Vyberte' }]}
-                    onChange={() => clearError('region')}
-                  />
-                  {errors.region && <p className="text-red-500 text-sm">{errors.region}</p>}
-                  <InputWithLabel
-                    name="phone"
-                    type="tel"
-                    onChange={() => clearError('phone')}
-                    error={errors.phone}
-                  />
-                  <InputWithLabel
-                    name="website"
-                    type="url"
-                    onChange={() => clearError('website')}
-                    error={errors.website}
-                  />
-                </div>
-                     <button
-                  type="button"
-                  onClick={onContinue}
-                  className="mt-4 bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
-                >
-                  Pokračovat
-                </button>
-            </section>
-          )}
+             <InputWithLabel name="birthDate" type="date" error={errors.birthDate} />
+              <SelectWithLabel
+                name="maritalStatus"
+                label="Rodinný stav"
+                options={[
+                  { value: '', label: 'Vyberte' },
+                  { value: 'svobodný', label: 'Svobodný' },
+                  { value: 'ženatý', label: 'Ženatý' },
+                ]}
+              />
+              <FileInputWithPreview
+                name="photo"
+                label="Fotografie"
+                accept="image/*"
+                preview={photoPreview}
+                onPreviewChange={setPhotoPreview}
+              />
+              <InputWithLabel name="street" />
+              <div className="flex gap-5">
+                <InputWithLabel name="postalCode" type="text" />
+                <InputWithLabel name="city" />
+              </div>
+              <SelectWithLabel
+                name="country"
+                label="Stát *"
+                options={[{ value: 'Česká republika', label: 'Česká republika' }]}
+                defaultValue="Česká republika"
+              />
+              <SelectWithLabel
+                name="region"
+                label="Kraj"
+                options={[{ value: '', label: 'Vyberte' }]}
+              />
+              <InputWithLabel name="phone" error={errors.phone} />
+              <InputWithLabel name="website" />
+            </div>
 
-          {/* Step 2+: Other Sections */}
-          {step > 1 && (
+          </section>
+          <div>
+     {step === 1 && (
+              <button
+                type="button"
+                onClick={handleNextStep}
+                className="mt-6 px-6 py-4 bg-blue-600 text-white rounded hover:bg-blue-700 w-full"
+              >
+                Pokračovat
+              </button>
+            )}
+            </div>
+          {step >= 2 && (
             <>
-
-              {/* Dynamic & Other Fields */}
               <DynamicSection
                 section="education"
                 fields={['startYear', 'endYear', 'field', 'schoolName']}
                 defaults={{ startYear: '', endYear: '', field: '', schoolName: '' }}
-                errors={errors}
-                clearError={clearError}
               />
-
               <DynamicSection
                 section="work"
                 fields={['start', 'end', 'employer', 'activity', 'position', 'description']}
-                defaults={{ start: '', end: '', employer: '', activity: '', position: '', description: '' }}
-                errors={errors}
-                clearError={clearError}
+                defaults={{
+                  start: '',
+                  end: '',
+                  employer: '',
+                  activity: '',
+                  position: '',
+                  description: '',
+                }}
               />
-
               <DynamicSection
                 section="certificates"
                 fields={['name', 'description']}
                 defaults={{ name: '', description: '' }}
-                errors={errors}
-                clearError={clearError}
               />
-
               <DynamicSection
                 section="languages"
                 fields={['language', 'level']}
                 defaults={{ language: '', level: '' }}
-                errors={errors}
-                clearError={clearError}
               />
-
-              <div className="flex flex-col gap-1">
-                <label htmlFor="references" className="text-sm text-[#7C8088]">
-                  Reference
-                </label>
-                <TextareaWithLabel
-                  name="references"
-                  placeholder="Reference"
-                  onChange={() => clearError('references')}
-                />
-                {errors.references && <p className="text-red-500 text-sm">{errors.references}</p>}
-              </div>
-
-              <div className="flex flex-col gap-1">
-                <label className="text-sm text-[#7C8088]">Řidičský průkaz</label>
-                <CheckboxGroup
-                  name="drivingLicense"
-                  options={['A', 'B', 'C', 'D', 'E', 'T'].map((group) => ({ value: group, label: group }))}
-                  onChange={() => clearError('drivingLicense')}
-                />
-                {errors.drivingLicense && <p className="text-red-500 text-sm">{errors.drivingLicense}</p>}
-              </div>
+              <TextareaWithLabel name="references" label="Reference" placeholder="Reference" />
+              <CheckboxGroup
+                name="drivingLicense"
+                label="Řidičský průkaz"
+                options={['A', 'B', 'C', 'D', 'E', 'T'].map((group) => ({
+                  value: group,
+                  label: group,
+                }))}
+              />
             </>
           )}
         </form>
@@ -242,3 +187,5 @@ export default function EditCvForm({
     </div>
   )
 }
+
+export default EditCvForm
