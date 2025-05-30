@@ -1,189 +1,192 @@
-// EditCvForm.tsx
-import { RefObject, useRef,useState  } from 'react'
-import InputWithLabel from './InputWithLabel'
-import SelectWithLabel from './SelectWithLabel'
-import RadioGroup from './RadioGroup'
-import FileInputWithPreview from './FileInputWithPreview'
-import TextareaWithLabel from './TextareaWithLabel'
-import CheckboxGroup from './CheckboxGroup'
-import DynamicSection from './DynamicSection'
-import { CvFormContext } from './CvFormContext'
-import { cvSchema } from './validation'
+'use client'
+
+import React from 'react'
+import Form from '@rjsf/core'
+import validator from '@rjsf/validator-ajv8'
+import { JSONSchema7 } from 'json-schema'
+
+import CustomFieldTemplate from './CustomFieldTemplate'
+import CustomArrayFieldTemplate from './CusromArrayFieldTemplate'
+import CustomObjectFieldTemplate from './CustomObjectFieldTemplate'
+import PhotoUploadWidget from './PhotoUploadWidget'
+import DriverLicenseWidget from './DriverLicenseWidget'
+import CustomTextareaWidget from './CustomTextAreaWIdget'
+
 
 interface EditCvFormProps {
-  formRef: RefObject<HTMLFormElement | null>
-  photoPreview: string | null
-  setPhotoPreview: (url: string | null) => void
-  handleSave: (formData: FormData) => void
+  handleSave: (formData: Record<string, any>) => void
   cvData: Record<string, any>
-  setCvData: React.Dispatch<React.SetStateAction<Record<string, any>>>
-  updateCvDataFromForm: () => void
 }
 
-const EditCvForm = ({
-  formRef,
-  photoPreview,
-  setPhotoPreview,
-  handleSave,
-  cvData,
-}: EditCvFormProps) => {
-  const internalFormRef = useRef<HTMLFormElement | null>(null)
-  const ref = formRef || internalFormRef
+const schema: JSONSchema7 = {
+  title: 'Životopis',
+  type: 'object',
+  required: ['firstName', 'lastName', 'email', 'gender'],
+  properties: {
+    firstName: { type: 'string', title: 'Jméno' },
+    lastName: { type: 'string', title: 'Příjmení' },
+    titulBefore: { type: 'string', title: 'Titul před jménem' },
+    titulAfter: { type: 'string', title: 'Titul za jménem' },
+    email: { type: 'string', title: 'Email', format: 'email' },
+    birthDate: { type: 'string', title: 'Datum narození', format: 'date' },
+    maritalStatus: {
+      type: 'string',
+      title: 'Rodinný stav',
+      enum: ['Svobodný/á', 'Ženatý/Vdaná', 'Rozvedený/á', 'Ovdovělý/á']
+    },
+    street: { type: 'string', title: 'Ulice a číslo popisné' },
+    zip: { type: 'string', title: 'PSČ' },
+    city: { type: 'string', title: 'Město' },
+    state: {
+      type: 'string',
+      title: 'Stát',
+      enum: ['Česká republika', 'Slovenská republika', 'Jiné']
+    },
+    region: {
+      type: 'string',
+      title: 'Kraj',
+      enum: [
+        'vyberte', 'Hlavní město Praha', 'Středočeský', 'Jihočeský', 'Plzeňský',
+        'Karlovarský', 'Ústecký', 'Liberecký', 'Královéhradecký', 'Pardubický',
+        'Vysočina', 'Jihomoravský', 'Olomoucký', 'Zlínský', 'Moravskoslezský'
+      ]
+    },
+    photo: {
+      type: 'string',
+      title: 'Fotografie',
+      contentEncoding: 'base64'
+    },
+    phone: { type: 'string', title: 'Telefon' },
+    website: { type: 'string', title: 'Webové stránky', format: 'uri' },
+    gender: {
+      type: 'string',
+      title: 'Pohlaví',
+      enum: ['muž', 'žena']
+    },
+    education: {
+      type: 'array',
+      title: 'Vzdělání',
+      items: {
+        type: 'object',
+        required: ['school', 'degree'],
+        properties: {
+          school: { type: 'string', title: 'Škola' },
+          degree: { type: 'string', title: 'Titul' },
+          field: { type: 'string', title: 'Obor' },
+          startYear: { type: 'string', title: 'Rok začátku' },
+          endYear: { type: 'string', title: 'Rok konce' }
+        }
+      }
+    },
+    workExperience: {
+      type: 'array',
+      title: 'Pracovní zkušenosti',
+      items: {
+        type: 'object',
+        required: ['company', 'position'],
+        properties: {
+          company: { type: 'string', title: 'Společnost' },
+          position: { type: 'string', title: 'Pozice' },
+          description: { type: 'string', title: 'Popis práce' },
+          startDate: { type: 'string', title: 'Začátek', format: 'date' },
+          endDate: { type: 'string', title: 'Konec', format: 'date' }
+        }
+      }
+    },
+    otherExperience: {
+      type: 'string',
+      title: 'Další profesní zkušenosti, reference'
+    },
+    languages: {
+      type: 'array',
+      title: 'Jazyky',
+      items: {
+        type: 'object',
+        properties: {
+          language: { type: 'string', title: 'Jazyk' },
+          level: {
+            type: 'string',
+            title: 'Úroveň',
+            enum: ['Základní', 'Střední', 'Pokročilá', 'Rodilý mluvčí']
+          }
+        }
+      }
+    },
+    driverLicense: {
+      type: 'array',
+      title: 'Řidičský průkaz',
+      items: {
+        type: 'string',
+        enum: ['A', 'B', 'C', 'D', 'E', 'T']
+      },
+      uniqueItems: true
+    }
+  }
+}
 
-  const [step, setStep] = useState(1)
-const [errors, setErrors] = useState<Record<string, string>>({})
+const uiSchema = {
+  email: { 'ui:placeholder': 'např. filip@email.cz' },
+  birthDate: { 'ui:widget': 'date' },
+  gender: {
+    'ui:widget': 'radio',
+    'ui:options': {
+      inline: true
+    }
+  },
+  photo: {
+    'ui:widget': 'photoUpload'
+  },
+otherExperience: {
+  'ui:widget': 'customTextarea',
+  'ui:options': {
+    placeholder: 'Popis'
+  }
+},
+  driverLicense: {
+    'ui:widget': 'driverLicenseWidget',
+    'ui:options': {
+      inline: true
+    }
+  }
+}
 
+const EditCvForm = ({ handleSave, cvData }: EditCvFormProps) => {
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    const formData = new FormData(ref.current!)
+  const onSubmit = ({ formData }: any) => {
     handleSave(formData)
   }
 
-const handleNextStep = () => {
-  const formData = new FormData(ref.current!)
-  const data = Object.fromEntries(formData.entries())
-  const result = cvSchema.safeParse(data)
-
-  if (!result.success) {
-    const fieldErrors = result.error.flatten().fieldErrors
-    setErrors({
-      firstName: fieldErrors.firstName?.[0] ?? '',
-      lastName: fieldErrors.lastName?.[0] ?? '',
-      email: fieldErrors.email?.[0] ?? '',
-      birthDate: fieldErrors.birthDate?.[0] ?? '',
-      phone: fieldErrors.phone?.[0] ?? '',
-    })
-
-  } else {
-    setErrors({})
-    setStep(2)
-  }
-}
-
-
   return (
-    <div className="bg-white shadow-lg p-6 md:p-10 lg:p-14 space-y-10 overflow-y-auto rounded-l-xl">
-      <CvFormContext.Provider value={cvData}>
-        <form ref={ref} onSubmit={handleSubmit} className="space-y-10">
-          <input
-            name="cvName"
-            id="cvName"
-            className="text-2xl font-bold w-full bg-transparent border-b-2 border-gray-300 focus:outline-none focus:border-blue-500"
-            placeholder="Název životopisu"
-            defaultValue=""
-          />
+    <div className="bg-white shadow-lg p-6 md:p-10 lg:p-14 overflow-y-auto rounded-l-xl space-y-6">
+      <Form
+        schema={schema}
+        uiSchema={uiSchema}
+        validator={validator}
+        formData={cvData}
+        onSubmit={onSubmit}
+        noHtml5Validate
+        showErrorList={false}
+        templates={{
+          FieldTemplate: CustomFieldTemplate,
+          ArrayFieldTemplate: CustomArrayFieldTemplate,
+          ObjectFieldTemplate: CustomObjectFieldTemplate
+        }}
+        widgets={{
+          photoUpload: PhotoUploadWidget,
+            driverLicenseWidget: DriverLicenseWidget,
+              customTextarea: CustomTextareaWidget
 
-          {/* Osobní údaje (Step 1) */}
-          <section className="space-y-6">
-            <h2 className="text-[24px] font-semibold text-secondary">1. Vaše osobní údaje</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8">
-            <InputWithLabel name="email" error={errors.email} />
-              <RadioGroup
-                name="gender"
-                label="Pohlaví *"
-                options={[
-                  { label: 'Muž', value: 'muž' },
-                  { label: 'Žena', value: 'žena' },
-                ]}
-              />
-              <InputWithLabel name="firstName" error={errors.firstName}/>
-         <InputWithLabel name="lastName" error={errors.lastName} />
-              <div className="flex gap-8">
-                <InputWithLabel name="titleBefore" />
-                <InputWithLabel name="titleAfter" />
-              </div>
-             <InputWithLabel name="birthDate" type="date" error={errors.birthDate} />
-              <SelectWithLabel
-                name="maritalStatus"
-                label="Rodinný stav"
-                options={[
-                  { value: '', label: 'Vyberte' },
-                  { value: 'svobodný', label: 'Svobodný' },
-                  { value: 'ženatý', label: 'Ženatý' },
-                ]}
-              />
-              <FileInputWithPreview
-                name="photo"
-                label="Fotografie"
-                accept="image/*"
-                preview={photoPreview}
-                onPreviewChange={setPhotoPreview}
-              />
-              <InputWithLabel name="street" />
-              <div className="flex gap-5">
-                <InputWithLabel name="postalCode" type="text" />
-                <InputWithLabel name="city" />
-              </div>
-              <SelectWithLabel
-                name="country"
-                label="Stát *"
-                options={[{ value: 'Česká republika', label: 'Česká republika' }]}
-                defaultValue="Česká republika"
-              />
-              <SelectWithLabel
-                name="region"
-                label="Kraj"
-                options={[{ value: '', label: 'Vyberte' }]}
-              />
-              <InputWithLabel name="phone" error={errors.phone} />
-              <InputWithLabel name="website" />
-            </div>
-
-          </section>
-          <div>
-     {step === 1 && (
-              <button
-                type="button"
-                onClick={handleNextStep}
-                className="mt-6 px-6 py-4 bg-blue-600 text-white rounded hover:bg-blue-700 w-full"
-              >
-                Pokračovat
-              </button>
-            )}
-            </div>
-          {step >= 2 && (
-            <>
-              <DynamicSection
-                section="education"
-                fields={['startYear', 'endYear', 'field', 'schoolName']}
-                defaults={{ startYear: '', endYear: '', field: '', schoolName: '' }}
-              />
-              <DynamicSection
-                section="work"
-                fields={['start', 'end', 'employer', 'activity', 'position', 'description']}
-                defaults={{
-                  start: '',
-                  end: '',
-                  employer: '',
-                  activity: '',
-                  position: '',
-                  description: '',
-                }}
-              />
-              <DynamicSection
-                section="certificates"
-                fields={['name', 'description']}
-                defaults={{ name: '', description: '' }}
-              />
-              <DynamicSection
-                section="languages"
-                fields={['language', 'level']}
-                defaults={{ language: '', level: '' }}
-              />
-              <TextareaWithLabel name="references" label="Reference" placeholder="Reference" />
-              <CheckboxGroup
-                name="drivingLicense"
-                label="Řidičský průkaz"
-                options={['A', 'B', 'C', 'D', 'E', 'T'].map((group) => ({
-                  value: group,
-                  label: group,
-                }))}
-              />
-            </>
-          )}
-        </form>
-      </CvFormContext.Provider>
+        }}
+      >
+        <div className="md:col-span-2 flex justify-end mt-4">
+          <button
+            type="submit"
+            className="bg-purple-600 text-white text-sm font-semibold px-6 py-3 rounded-lg hover:bg-purple-700 transition"
+          >
+            Uložit životopis
+          </button>
+        </div>
+      </Form>
     </div>
   )
 }
