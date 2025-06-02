@@ -8,7 +8,7 @@ const TemplateProfessional = ({ cvData, photoPreview }: any) => (
           className="w-24 h-24 rounded-full object-cover border-2"
         />
       )}
-      <div className="bg-secondary text-white">
+      <div className="bg-stone-100 text-black">
         <h1 className="text-3xl font-bold">
           {cvData.firstName} {cvData.lastName}
         </h1>

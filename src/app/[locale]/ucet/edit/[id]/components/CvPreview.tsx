@@ -19,7 +19,6 @@ const CvPreview = ({ cvData, photoPreview, handleSave }: CvPreviewProps) => {
 
   return (
     <div className="bg-[#2e2f4e] text-white fixed right-0 top-0 bottom-0 w-1/2 z-40 overflow-y-auto shadow-xl flex flex-col">
-      {/* Top bar */}
       <div className="pt-6 border-t border-gray-300 gap-10 w-full flex items-center justify-end px-10">
         <button
           type="button"
