@@ -29,8 +29,6 @@ const CustomFieldTemplate = ({
   [&>input]:h-[50px] 
   [&>input]:w-full 
   [&>input]:rounded-md 
-  [&>input]:border 
-  [&>input]:border-gray-300 
   [&>input]:px-4 
   [&>input]:text-sm 
   [&>input]:text-gray-900 
@@ -42,8 +40,6 @@ const CustomFieldTemplate = ({
   [&>select]:h-[50px] 
   [&>select]:w-full 
   [&>select]:rounded-md 
-  [&>select]:border 
-  [&>select]:border-gray-300 
   [&>select]:px-4 
   [&>select]:text-sm 
   [&>select]:text-gray-900 
@@ -56,8 +52,6 @@ const CustomFieldTemplate = ({
   [&>input[type='date']]:h-[50px] 
   [&>input[type='date']]:w-full 
   [&>input[type='date']]:rounded-md 
-  [&>input[type='date']]:border 
-  [&>input[type='date']]:border-gray-300 
   [&>input[type='date']]:px-4 
   [&>input[type='date']]:text-sm 
   [&>input[type='date']]:text-gray-900 

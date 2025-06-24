@@ -4,18 +4,22 @@ import React from 'react'
 import Form from '@rjsf/core'
 import validator from '@rjsf/validator-ajv8'
 import { JSONSchema7 } from 'json-schema'
-
+import Image from 'next/image'
+import Link from 'next/link'
+import { useParams } from 'next/navigation'
 import CustomFieldTemplate from './CustomFieldTemplate'
-import CustomArrayFieldTemplate from './CusromArrayFieldTemplate'
+import EditableInput from './CvName'
 import CustomObjectFieldTemplate from './CustomObjectFieldTemplate'
 import PhotoUploadWidget from './PhotoUploadWidget'
 import DriverLicenseWidget from './DriverLicenseWidget'
 import CustomTextareaWidget from './CustomTextAreaWIdget'
 
 
+
 interface EditCvFormProps {
   handleSave: (formData: Record<string, any>) => void
   cvData: Record<string, any>
+  setCvData: (data: Record<string, any>) => void
 }
 
 const schema: JSONSchema7 = {
@@ -24,11 +28,21 @@ const schema: JSONSchema7 = {
   required: ['firstName', 'lastName', 'email', 'gender'],
   properties: {
     firstName: { type: 'string', title: 'Jméno' },
+    gender: {
+      type: 'string',
+      title: 'Pohlaví',
+      enum: ['muž', 'žena']
+    },
     lastName: { type: 'string', title: 'Příjmení' },
     titulBefore: { type: 'string', title: 'Titul před jménem' },
     titulAfter: { type: 'string', title: 'Titul za jménem' },
     email: { type: 'string', title: 'Email', format: 'email' },
     birthDate: { type: 'string', title: 'Datum narození', format: 'date' },
+    photo: {
+      type: 'string',
+      title: '',
+      contentEncoding: 'base64'
+    },
     maritalStatus: {
       type: 'string',
       title: 'Rodinný stav',
@@ -51,18 +65,8 @@ const schema: JSONSchema7 = {
         'Vysočina', 'Jihomoravský', 'Olomoucký', 'Zlínský', 'Moravskoslezský'
       ]
     },
-    photo: {
-      type: 'string',
-      title: 'Fotografie',
-      contentEncoding: 'base64'
-    },
     phone: { type: 'string', title: 'Telefon' },
     website: { type: 'string', title: 'Webové stránky', format: 'uri' },
-    gender: {
-      type: 'string',
-      title: 'Pohlaví',
-      enum: ['muž', 'žena']
-    },
     education: {
       type: 'array',
       title: 'Vzdělání',
@@ -129,66 +133,104 @@ const uiSchema = {
   birthDate: { 'ui:widget': 'date' },
   gender: {
     'ui:widget': 'radio',
-    'ui:options': {
-      inline: true
-    }
+    'ui:options': { inline: true },
+    'classNames': 'flex gap-5 items-center'
   },
-  photo: {
-    'ui:widget': 'photoUpload'
+  photo: { 'ui:widget': 'photoUpload' },
+  otherExperience: {
+    'ui:widget': 'customTextarea',
+    'ui:options': { placeholder: 'Popis' }
   },
-otherExperience: {
-  'ui:widget': 'customTextarea',
-  'ui:options': {
-    placeholder: 'Popis'
-  }
-},
   driverLicense: {
     'ui:widget': 'driverLicenseWidget',
-    'ui:options': {
-      inline: true
-    }
+    'ui:options': { inline: true }
+  },
+education: {
+  'ui:options': {
+    addable: true,
+    removable: true,
+    orderable: true,
+        classNames: 'border border-gray-300 rounded-md p-4 bg-white'
+  },
+  
+},
+workExperience: {
+  'ui:options': {
+    addable: true,
+    removable: true,
+    orderable: true,
+        classNames: 'border border-gray-300 rounded-md p-4 bg-white'
   }
+},
+languages: {
+  'ui:options': {
+    addable: true,
+    removable: true,
+    orderable: true,
+    classNames: 'border border-gray-300 rounded-md p-4 bg-white'
+  }
+},
 }
 
-const EditCvForm = ({ handleSave, cvData }: EditCvFormProps) => {
-
-  const onSubmit = ({ formData }: any) => {
-    handleSave(formData)
-  }
+const EditCvForm = ({ handleSave, cvData, setCvData }: EditCvFormProps) => {
+  const onSubmit = ({ formData }: any) => handleSave(formData)
+  const [cvName, setCvName] = React.useState('')
+  const params = useParams()
+  const locale = params.locale ?? 'sk'
+  const withLocale = (path: string) => `/${locale}${path}`
 
   return (
-    <div className="bg-white shadow-lg p-6 md:p-10 lg:p-14 overflow-y-auto rounded-l-xl space-y-6">
-      <Form
-        schema={schema}
-        uiSchema={uiSchema}
-        validator={validator}
-        formData={cvData}
-        onSubmit={onSubmit}
-        noHtml5Validate
-        showErrorList={false}
-        templates={{
-          FieldTemplate: CustomFieldTemplate,
-          ArrayFieldTemplate: CustomArrayFieldTemplate,
-          ObjectFieldTemplate: CustomObjectFieldTemplate
-        }}
-        widgets={{
-          photoUpload: PhotoUploadWidget,
-            driverLicenseWidget: DriverLicenseWidget,
-              customTextarea: CustomTextareaWidget
-
-        }}
-      >
-        <div className="md:col-span-2 flex justify-end mt-4">
-          <button
-            type="submit"
-            className="bg-purple-600 text-white text-sm font-semibold px-6 py-3 rounded-lg hover:bg-purple-700 transition"
-          >
-            Uložit životopis
-          </button>
+    <div className="bg-white">
+      <div className="py-10 px-14 flex justify-between">
+        <div className="flex gap-5">
+          <Link href={withLocale('/')} className="flex items-start space-x-2 text-secondary font-bold text-2xl">
+            <Image src="/logo.svg" alt="Logo" width={135} height={31} />
+          </Link>
+          <div className="border border-[#D9D9D9] h-[70%] my-auto"></div>
+          <Link href={withLocale('/ucet')} className="block py-2 text-sm text-primary underline">
+            Můj účet
+          </Link>
         </div>
-      </Form>
+        <Link href={withLocale('/ucet')} className="block px-6 py-2 text-sm text-primary underline">
+          Nápověda
+        </Link>
+      </div>
+
+      <div className="px-14">
+        <EditableInput
+          value={cvName}
+          placeholder="Pojmenujte si Vaše CV"
+          onChange={setCvName}
+        />
+      </div>
+
+      <div className="border-b-2 w-[90%] mx-auto border-[#D9D9D9] py-5"></div>
+
+      <div className="bg-white p-6 md:p-10 lg:p-14 overflow-y-auto rounded-l-xl space-y-6">
+        <div className="rjsf">
+        <Form
+          schema={schema}
+          uiSchema={uiSchema}
+          formData={cvData}
+          onSubmit={onSubmit}
+          onChange={({ formData }) => setCvData(formData)}
+          validator={validator}
+          showErrorList={false}
+          noHtml5Validate
+          templates={{
+            FieldTemplate: CustomFieldTemplate,
+            ObjectFieldTemplate: CustomObjectFieldTemplate,
+          }}
+          widgets={{
+            photoUpload: PhotoUploadWidget,
+            driverLicenseWidget: DriverLicenseWidget,
+            customTextarea: CustomTextareaWidget
+          }}
+        />
+        </div>
+      </div>
     </div>
   )
 }
 
-export default EditCvForm
+export default EditCvForm;

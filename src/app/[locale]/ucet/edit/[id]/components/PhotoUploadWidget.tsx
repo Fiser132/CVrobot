@@ -17,23 +17,22 @@ const PhotoUploadWidget = ({ value, onChange }: any) => {
   }
 
   return (
-    <div className="flex flex-col items-center space-y-3">
-      <div className="relative w-32 h-32">
+    <div className="flex gap-5 items-center space-y-3">
+      <div className="relative w-16 h-16">
         {value ? (
           <img
             src={value}
             alt="Nahraná fotografie"
-            className="w-32 h-32 object-cover rounded-full border-2 border-gray-300 shadow-sm"
+            className="w-16 h-16 object-cover rounded-full border-2 border-gray-300 shadow-sm"
           />
         ) : (
-          <div className="w-32 h-32 flex items-center justify-center border-2 border-dashed border-gray-300 rounded-full bg-gray-50 text-gray-500 text-sm text-center">
+          <div className="w-16 h-16 flex items-center justify-center  rounded-full bg-gray-100 text-gray-500 text-sm text-center">
             <FontAwesomeIcon icon={faUser} className="w-6 h-6" />
           </div>
         )}
       </div>
 
-      <label className="inline-flex items-center gap-2 cursor-pointer bg-purple-600 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-purple-700 transition">
-        <FontAwesomeIcon icon={faUpload} className="w-4 h-4" />
+      <label className="text-sm text-primary underline">
         Nahrát fotografii
         <input
           type="file"

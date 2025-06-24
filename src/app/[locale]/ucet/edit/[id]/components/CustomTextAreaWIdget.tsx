@@ -22,7 +22,7 @@ const CustomTextareaWidget = ({
   return (
     <textarea
       id={id}
-      className="w-full min-h-[120px] bg-gray-100 text-sm rounded-md border border-gray-200 p-4 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+      className="w-full min-h-[120px] bg-gray-100 text-sm rounded-md p-4 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
       value={value || ''}
       required={required}
       disabled={disabled}
