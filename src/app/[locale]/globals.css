@@ -36,3 +36,83 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans), sans-serif;
 }
+/* Add button: typically has no title but is the last button */
+.rjsf button[type='button']:not([title]) {
+  background-color: #2563eb; /* Tailwind blue-600 */
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  transition: background-color 0.2s;
+}
+.rjsf button[type='button']:not([title]):hover {
+  background-color: #1d4ed8; /* blue-700 */
+}
+.rjsf button[type='button']:not([title])::after {
+  content: '+ Přidat položku';
+}
+
+/* Style the add button */
+.rjsf button[type='button']:not([title]) {
+  background-color: #2563eb;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 14px;
+  margin-top: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+/* Delete button */
+.rjsf button[title='Remove']::after {
+  content: '🗑 ';
+}
+.rjsf button[title='Remove'] {
+  color: #dc2626; /* red-600 */
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 20px;
+  background: white;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.rjsf button[title='Remove']:hover {
+  background: #fee2e2; /* red-100 */
+}
+
+/* Move up */
+.rjsf button[title='Move up']::after {
+  content: '↑ ';
+}
+.rjsf button[title='Move up'] {
+  padding: 4px 10px;
+  font-size: 14px;
+  border: 1px solid #999;
+  background: white;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.rjsf button[title='Move up']:hover {
+  background: #f3f4f6; /* gray-100 */
+}
+
+/* Move down */
+.rjsf button[title='Move down']::after {
+  content: '↓ ';
+}
+.rjsf button[title='Move down'] {
+  padding: 4px 10px;
+  font-size: 14px;
+  border: 1px solid #999;
+  background: white;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.rjsf button[title='Move down']:hover {
+  background: #f3f4f6;
+}
+
