@@ -41,7 +41,7 @@ export default function Header() {
   }, [dropdownOpen])
 
   return (
-    <header className="bg-white">
+    <header className="bg-white z-50">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         <Link
           href={withLocale('/')}

@@ -1,24 +1,91 @@
 'use client'
 import React, { useEffect, useState } from 'react';
-import { Download, CheckCircle, FileText, Clock, Shield, Star, ArrowLeft } from 'lucide-react';
-import { useSearchParams } from 'next/navigation';
+import { Download, CheckCircle, FileText, Clock, Shield, Star, ArrowLeft, Sparkles, Settings, CreditCard } from 'lucide-react';
+
+// Animated Background Component
+const AnimatedBackground = () => {   
+  return (     
+    <div className="inset-0 overflow-hidden pointer-events-none">       
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-purple-50">         
+        {/* Floating Circles */}         
+        <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-blue-400/10 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>         
+        <div className="absolute top-1/3 right-1/4 w-72 h-72 bg-purple-400/10 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-1000"></div>         
+        <div className="absolute bottom-1/4 left-1/3 w-72 h-72 bg-pink-400/10 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-2000"></div>                  
+        
+        {/* Grid Pattern */}         
+        <div className="absolute inset-0 opacity-20">           
+          <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">             
+            <defs>               
+              <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">                 
+                <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#000000" strokeWidth="0.5"/>               
+              </pattern>             
+            </defs>             
+            <rect width="100%" height="100%" fill="url(#grid)" />           
+          </svg>         
+        </div>       
+      </div>     
+    </div>   
+  ); 
+};
+
+// Progress Indicator Component
+const ProgressIndicator = () => {
+  return (
+    <div className="flex items-center justify-center py-10 ">
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
+          <div className="w-10 h-10 bg-green-500 text-white rounded-full flex items-center justify-center font-bold shadow-lg">
+            ✓
+          </div>
+          <span className="font-bold text-green-600">Build</span>
+        </div>
+        <div className="w-12 h-1 bg-green-500 rounded-full"></div>
+        <div className="flex items-center gap-2">
+          <div className="w-10 h-10 bg-green-500 text-white rounded-full flex items-center justify-center font-bold shadow-lg">
+            ✓
+          </div>
+          <span className="font-bold text-green-500">Deploy</span>
+        </div>
+        <div className="w-12 h-1 bg-blue-500 rounded-full"></div>
+        <div className="flex items-center gap-2">
+          <div className="w-10 h-10 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold">
+            3
+          </div>
+          <span className="text-blue-500 font-bold">Download</span>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 // Success Animation Component
 const SuccessAnimation = () => {
   return (
-    <div className="flex flex-col items-center mb-8">
-      <div className="relative">
-        <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-4 animate-pulse">
-          <CheckCircle className="w-10 h-10 text-green-500" />
+    <div className="text-center mb-12">
+      <div className="relative inline-block">
+        <div className="w-24 h-24 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center mb-6 shadow-lg">
+          <CheckCircle className="w-12 h-12 text-white" />
         </div>
-        <div className="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full animate-bounce"></div>
+        <div className="absolute -top-1 -right-1 w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center animate-bounce">
+          <Sparkles className="w-4 h-4 text-yellow-800" />
+        </div>
       </div>
-      <h1 className="text-2xl font-bold text-gray-900 text-center mb-2">
+      <h1 className="text-3xl font-bold text-gray-900 mb-3">
         Platba úspěšná! 🎉
       </h1>
-      <p className="text-gray-600 text-center">
+      <p className="text-lg text-gray-600">
         Váš životopis je připraven ke stažení
       </p>
+    </div>
+  );
+};
+
+// Premium Badge Component
+const PremiumBadge = () => {
+  return (
+    <div className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white px-3 py-1 rounded-full text-sm font-medium">
+      <Star className="w-4 h-4 fill-current" />
+      Premium
     </div>
   );
 };
@@ -26,32 +93,28 @@ const SuccessAnimation = () => {
 // Download Button Component
 const DownloadButton = ({ cvId, cvName, loading, onDownload }) => {
   return (
-    <div className="bg-white border-2 border-green-200 rounded-xl p-6 shadow-sm">
-      <div className="flex items-center gap-4 mb-4">
-        <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-          <FileText className="w-6 h-6 text-green-600" />
+    <div className="bg-white rounded-2xl p-8 shadow-xl border border-gray-100">
+      <div className="flex items-start justify-between mb-6">
+        <div className="flex items-center gap-4">
+          <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+            <FileText className="w-8 h-8 text-white" />
+          </div>
+          <div>
+            <h3 className="text-xl font-bold text-gray-900 mb-1">{cvName}</h3>
+            <p className="text-gray-500">PDF formát • Bez vodoznaku • Vysoká kvalita</p>
+          </div>
         </div>
-        <div className="flex-1">
-          <h3 className="font-semibold text-gray-900">{cvName}</h3>
-          <p className="text-sm text-gray-500">PDF formát • Bez vodoznaku • Vysoká kvalita</p>
-        </div>
-        <div className="flex items-center gap-1">
-          <Star className="w-4 h-4 text-yellow-400 fill-current" />
-          <Star className="w-4 h-4 text-yellow-400 fill-current" />
-          <Star className="w-4 h-4 text-yellow-400 fill-current" />
-          <Star className="w-4 h-4 text-yellow-400 fill-current" />
-          <Star className="w-4 h-4 text-yellow-400 fill-current" />
-        </div>
+        <PremiumBadge />
       </div>
 
       <button
         onClick={onDownload}
         disabled={loading}
-        className="w-full bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white font-semibold py-4 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center gap-3 shadow-sm text-lg"
+        className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 disabled:from-green-400 disabled:to-green-500 text-white font-bold py-5 px-8 rounded-xl transition-all duration-200 flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-lg"
       >
         {loading ? (
           <>
-            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
             Připravuje se...
           </>
         ) : (
@@ -62,30 +125,56 @@ const DownloadButton = ({ cvId, cvName, loading, onDownload }) => {
         )}
       </button>
 
-      <p className="text-xs text-gray-500 text-center mt-3">
+      <div className="flex items-center justify-center gap-2 mt-4 text-sm text-gray-500">
+        <Clock className="w-4 h-4" />
         Stažení je platné po dobu 30 dnů
-      </p>
+      </div>
     </div>
   );
 };
 
-// What You Got Section
-const WhatYouGot = () => {
+// Features Grid Component
+const FeaturesGrid = () => {
   const features = [
-    { icon: CheckCircle, text: 'Profesionální formátování', color: 'text-green-500' },
-    { icon: Shield, text: 'Bez vodoznaku', color: 'text-blue-500' },
-    { icon: FileText, text: 'Optimalizováno pro tisk', color: 'text-purple-500' },
-    { icon: Download, text: 'Okamžité stažení', color: 'text-orange-500' }
+    { 
+      icon: CheckCircle, 
+      title: 'Profesionální formátování', 
+      description: 'Optimalizováno pro personalisty',
+      color: 'from-green-500 to-green-600'
+    },
+    { 
+      icon: Shield, 
+      title: 'Bez vodoznaku', 
+      description: 'Čistý, profesionální vzhled',
+      color: 'from-blue-500 to-blue-600'
+    },
+    { 
+      icon: FileText, 
+      title: 'Vysoká kvalita tisku', 
+      description: 'Perfektní pro fyzické kopie',
+      color: 'from-purple-500 to-purple-600'
+    },
+    { 
+      icon: Download, 
+      title: 'Okamžité stažení', 
+      description: 'Dostupné ihned po platbě',
+      color: 'from-orange-500 to-orange-600'
+    }
   ];
 
   return (
-    <div className="bg-white rounded-xl p-6 border border-gray-200">
-      <h3 className="font-semibold text-gray-900 mb-4">Co jste získali</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+    <div className="bg-white rounded-2xl p-8 shadow-xl border border-gray-100">
+      <h3 className="text-xl font-bold text-gray-900 mb-6">Co jste získali</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {features.map((feature, index) => (
-          <div key={index} className="flex items-center gap-3">
-            <feature.icon className={`w-5 h-5 ${feature.color}`} />
-            <span className="text-gray-700">{feature.text}</span>
+          <div key={index} className="flex items-start gap-4 p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors">
+            <div className={`w-10 h-10 bg-gradient-to-br ${feature.color} rounded-lg flex items-center justify-center shadow-sm`}>
+              <feature.icon className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h4 className="font-semibold text-gray-900 mb-1">{feature.title}</h4>
+              <p className="text-sm text-gray-600">{feature.description}</p>
+            </div>
           </div>
         ))}
       </div>
@@ -93,27 +182,49 @@ const WhatYouGot = () => {
   );
 };
 
-// Payment Details Component
-const PaymentDetails = ({ sessionId }) => {
+// Payment Summary Component
+const PaymentSummary = ({ sessionId }) => {
   return (
-    <div className="bg-gray-50 rounded-lg p-4">
-      <h4 className="font-medium text-gray-900 mb-2">Detaily platby</h4>
-      <div className="space-y-2 text-sm text-gray-600">
-        <div className="flex justify-between">
-          <span>Částka:</span>
-          <span className="font-medium">49 Kč</span>
+    <div className="bg-white rounded-2xl p-6 shadow-xl border border-gray-100">
+      <h4 className="text-lg font-bold text-gray-900 mb-4">Shrnutí platby</h4>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between py-2 border-b border-gray-100">
+          <span className="text-gray-600">Částka</span>
+          <span className="font-bold text-lg text-gray-900">49 Kč</span>
         </div>
-        <div className="flex justify-between">
-          <span>Datum:</span>
-          <span>{new Date().toLocaleDateString('cs-CZ')}</span>
+        <div className="flex items-center justify-between py-2 border-b border-gray-100">
+          <span className="text-gray-600">Datum</span>
+          <span className="font-medium text-gray-900">{new Date().toLocaleDateString('cs-CZ')}</span>
         </div>
-        <div className="flex justify-between">
-          <span>ID transakce:</span>
-          <span className="font-mono text-xs">{sessionId?.slice(-8) || 'N/A'}</span>
+        <div className="flex items-center justify-between py-2 border-b border-gray-100">
+          <span className="text-gray-600">ID transakce</span>
+          <span className="font-mono text-sm text-gray-700">#{sessionId?.slice(-8) || 'N/A'}</span>
         </div>
-        <div className="flex justify-between">
-          <span>Status:</span>
-          <span className="text-green-600 font-medium">Zaplaceno</span>
+        <div className="flex items-center justify-between py-2">
+          <span className="text-gray-600">Status</span>
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+            <span className="text-green-600 font-semibold">Zaplaceno</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Info Card Component
+const InfoCard = () => {
+  return (
+    <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6 border border-blue-200">
+      <div className="flex items-start gap-4">
+        <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
+          <Clock className="w-5 h-5 text-white" />
+        </div>
+        <div>
+          <h4 className="font-bold text-blue-900 mb-2">Tip pro budoucnost</h4>
+          <p className="text-blue-800 text-sm leading-relaxed">
+            Uložte si tento odkaz do záložek. Váš životopis si můžete stáhnout kdykoli během následujících 30 dnů bez dalších poplatků.
+          </p>
         </div>
       </div>
     </div>
@@ -123,11 +234,12 @@ const PaymentDetails = ({ sessionId }) => {
 // Loading State Component
 const LoadingState = () => {
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-      <div className="text-center">
-        <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
-        <h1 className="text-xl font-semibold text-gray-900 mb-2">Ověřuje se platba...</h1>
-        <p className="text-gray-600">Moment prosím</p>
+    <div className="min-h-screen relative flex items-center justify-center px-4">
+      <AnimatedBackground />
+      <div className="text-center relative z-10">
+        <div className="w-20 h-20 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-6"></div>
+        <h1 className="text-2xl font-bold text-gray-900 mb-3">Ověřuje se platba...</h1>
+        <p className="text-gray-600">Moment prosím, zpracováváme vaši požadavek</p>
       </div>
     </div>
   );
@@ -136,16 +248,17 @@ const LoadingState = () => {
 // Error State Component
 const ErrorState = ({ message, onBack }) => {
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-      <div className="text-center">
-        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <FileText className="w-8 h-8 text-red-600" />
+    <div className="min-h-screen relative flex items-center justify-center px-4">
+      <AnimatedBackground />
+      <div className="text-center max-w-md relative z-10">
+        <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <FileText className="w-10 h-10 text-red-600" />
         </div>
-        <h1 className="text-xl font-semibold text-gray-900 mb-2">Chyba</h1>
-        <p className="text-gray-600 mb-6">{message}</p>
+        <h1 className="text-2xl font-bold text-gray-900 mb-3">Ups! Něco se pokazilo</h1>
+        <p className="text-gray-600 mb-8">{message}</p>
         <button
           onClick={onBack}
-          className="text-blue-600 hover:text-blue-700 font-medium"
+          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
         >
           Zpět na platbu
         </button>
@@ -155,119 +268,38 @@ const ErrorState = ({ message, onBack }) => {
 };
 
 // Main Download Page Component
-export default function DownloadPage({ params }) {
+export default function DownloadPage() {
   const [loading, setLoading] = useState(true);
   const [downloadLoading, setDownloadLoading] = useState(false);
-  const [cvData, setCvData] = useState(null);
-  const [paymentVerified, setPaymentVerified] = useState(false);
+  const [cvData, setCvData] = useState({ name: 'Můj profesionální životopis' });
+  const [paymentVerified, setPaymentVerified] = useState(true);
   const [error, setError] = useState(null);
-  const searchParams = useSearchParams();
   
-  const { locale, cvId } = params;
-  const sessionId = searchParams.get('session_id');
+  const cvId = 'demo-cv-123';
+  const sessionId = 'sess_demo123456789';
 
   useEffect(() => {
-    const verifyPaymentAndLoadCV = async () => {
-      if (!cvId) {
-        setError('Chybí ID životopisu');
-        setLoading(false);
-        return;
-      }
+    // Simulate loading
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 1500);
 
-      try {
-        // If we have a sessionId, verify payment
-        if (sessionId) {
-          console.log('Verifying payment for session:', sessionId);
-          
-          const verifyResponse = await fetch('/api/verify-payment', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ sessionId, cvId })
-          });
-
-          if (!verifyResponse.ok) {
-            const errorText = await verifyResponse.text();
-            console.error('Payment verification failed:', errorText);
-            throw new Error('Platba nebyla ověřena');
-          }
-
-          const verifyData = await verifyResponse.json();
-          console.log('Payment verification result:', verifyData);
-          
-          if (!verifyData.paid) {
-            throw new Error('Platba nebyla dokončena');
-          }
-
-          setPaymentVerified(true);
-        } else {
-          // For testing without payment
-          console.log('No session ID - skipping payment verification for testing');
-          setPaymentVerified(true);
-        }
-
-        // Load CV data
-        console.log('Loading CV data for ID:', cvId);
-        const cvResponse = await fetch(`/api/cv/${cvId}`);
-        
-        if (!cvResponse.ok) {
-          const errorText = await cvResponse.text();
-          console.error('CV fetch failed:', errorText);
-          throw new Error('Nepodařilo se načíst data životopisu');
-        }
-
-        const cvData = await cvResponse.json();
-        console.log('CV data loaded:', cvData);
-        setCvData(cvData);
-
-      } catch (error) {
-        console.error('Error details:', error);
-        setError(error.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    verifyPaymentAndLoadCV();
-  }, [sessionId, cvId]);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleDownload = async () => {
-    if (!cvId || !paymentVerified) return;
-
     setDownloadLoading(true);
     
-    try {
-      // Generate and download the CV PDF
-      const response = await fetch(`/api/generate-cv/${cvId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId, removeWatermark: true })
-      });
-
-      if (!response.ok) {
-        throw new Error('Nepodařilo se vygenerovat PDF');
-      }
-
-      // Download the file
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${cvData?.name || 'zivotopis'}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
-
-    } catch (error) {
-      console.error('Download error:', error);
-      alert('Došlo k chybě při stahování. Zkuste to prosím znovu.');
-    } finally {
+    // Simulate download process
+    setTimeout(() => {
       setDownloadLoading(false);
-    }
+      // In real implementation, this would trigger the actual download
+      alert('CV se stahuje! 📄');
+    }, 2000);
   };
 
   const handleGoBack = () => {
-    window.location.href = `/${locale}/platba?cvId=${cvId}`;
+    alert('Navigace zpět na platební stránku');
   };
 
   if (loading) {
@@ -279,31 +311,37 @@ export default function DownloadPage({ params }) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen relative">
+      <AnimatedBackground />
+      
+      <div className="relative z-10">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-4 py-4">
+      <header className="bg-white shadow-sm border-b border-gray-200 relative z-10">
+        <div className="max-w-6xl mx-auto px-4 py-6">
           <div className="flex items-center gap-4">
             <button
               onClick={handleGoBack}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded-lg"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span className="text-sm font-medium">Zpět</span>
+              <span className="font-medium">Zpět</span>
             </button>
             <div className="w-px h-6 bg-gray-300"></div>
-            <h1 className="text-lg font-semibold text-gray-900">Stažení životopisu</h1>
+            <h1 className="text-xl font-bold text-gray-900">Stažení životopisu</h1>
           </div>
         </div>
       </header>
 
+      {/* Progress Indicator */}
+      <ProgressIndicator />
+
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-4 py-8">
+      <main className="max-w-6xl mx-auto px-4 py-12 relative z-10">
         <SuccessAnimation />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column - Download */}
-          <div className="lg:col-span-2">
+          {/* Left Column - Download & Features */}
+          <div className="lg:col-span-2 space-y-8">
             <DownloadButton
               cvId={cvId}
               cvName={cvData?.name || 'Váš životopis'}
@@ -311,30 +349,18 @@ export default function DownloadPage({ params }) {
               onDownload={handleDownload}
             />
 
-            <div className="mt-6">
-              <WhatYouGot />
-            </div>
+            <FeaturesGrid />
 
-            {/* Tips */}
-            <div className="mt-6 bg-blue-50 rounded-lg p-4">
-              <div className="flex items-start gap-3">
-                <Clock className="w-5 h-5 text-blue-600 mt-0.5" />
-                <div>
-                  <p className="text-sm font-medium text-blue-900">Tip pro budoucnost</p>
-                  <p className="text-sm text-blue-700 mt-1">
-                    Uložte si tento link - můžete si životopis stáhnout kdykoli během 30 dnů
-                  </p>
-                </div>
-              </div>
-            </div>
+            <InfoCard />
           </div>
 
-          {/* Right Column - Payment Details */}
+          {/* Right Column - Payment Summary */}
           <div className="lg:col-span-1">
-            <PaymentDetails sessionId={sessionId} />
+            <PaymentSummary sessionId={sessionId} />
           </div>
         </div>
       </main>
+      </div>
     </div>
   );
 }

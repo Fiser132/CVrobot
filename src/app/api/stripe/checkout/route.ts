@@ -47,11 +47,11 @@ export async function POST(request: Request) {
       line_items: [
         {
           price_data: {
-            currency: 'czk',
+            currency: 'eur',
             product_data: {
               name: 'Stažení životopisu',
             },
-            unit_amount: 4900, // 49 Kč in cents
+            unit_amount: 1000, 
           },
           quantity: 1,
         },
