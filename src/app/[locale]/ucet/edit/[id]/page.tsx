@@ -1419,16 +1419,6 @@ export default function EditCVPage() {
         <div className="overflow-y-auto h-full">
           {/* Form Content */}
           <div className="p-6 max-w-4xl mx-auto">
-            {/* CV Name */}
-            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 p-6 mb-6">
-              <SmartInput
-                label="Název životopisu"
-                value={cvName}
-                onChange={setCvName}
-                placeholder="např. CV - Frontend Developer"
-                icon={FileText}
-              />
-            </div>
 
             {/* Personal Information */}
             <CollapsibleSection title="Osobní údaje" icon={User}>

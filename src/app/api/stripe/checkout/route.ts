@@ -67,7 +67,6 @@ export async function POST(request: Request) {
       allow_promotion_codes: true, // Allow discount codes
       billing_address_collection: 'required',
       subscription_data: {
-        trial_period_days: 7, // Optional: 7-day free trial
         metadata: {
           locale: locale,
           cvId: cvId, // Track which CV triggered the subscription
@@ -77,9 +76,9 @@ export async function POST(request: Request) {
 
     console.log('Subscription session created successfully:', session.id);
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       id: session.id,
-      url: session.url 
+      url: session.url
     });
     
   } catch (error) {

@@ -326,7 +326,7 @@ const CVDashboard = () => {
             )
             
             // Redirect to builder page with the new CV ID
-            router.push(withLocale(`/builder/${newCVData.insertedId}`))
+            router.push(withLocale(`/ucet/edit/${newCVData.insertedId}`))
         } catch (error) {
             console.error('Failed to create CV:', error)
             setError('Nepodařilo se vytvořit životopis. Zkuste to prosím znovu.')
