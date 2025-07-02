@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 import { 
@@ -10,6 +10,23 @@ import {
   Eye, Upload, Camera, BookOpen, Target, Settings, Star, Download,
   ArrowLeft, TrendingUp
 } from 'lucide-react'
+
+// Debounce hook for auto-save
+const useDebounce = (value, delay) => {
+  const [debouncedValue, setDebouncedValue] = useState(value)
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value)
+    }, delay)
+
+    return () => {
+      clearTimeout(handler)
+    }
+  }, [value, delay])
+
+  return debouncedValue
+}
 
 // Progress Bar Component
 const ProgressBar = ({ progress, className = "" }) => {
@@ -820,65 +837,16 @@ const LivePreview = ({ cvData, photoPreview, isUnlocked = false, cvId, currentTe
   )
 }
 
-// API Helper Functions
-const apiHelper = {
-  // Create new CV
-  async createCV(name, content) {
-    const response = await fetch('/api/cvs', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ name, content }),
-    })
-    
-    if (!response.ok) {
-      throw new Error('Failed to create CV')
-    }
-    
-    return response.json()
-  },
-
-  // Update existing CV
-  async updateCV(id, content) {
-    const response = await fetch('/api/cvs', {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ id, content }),
-    })
-    
-    if (!response.ok) {
-      throw new Error('Failed to update CV')
-    }
-    
-    return response.json()
-  },
-
-  // Get all CVs
-  async getCVs() {
-    const response = await fetch('/api/cvs')
-    
-    if (!response.ok) {
-      throw new Error('Failed to fetch CVs')
-    }
-    
-    return response.json()
-  },
-
-  // Get specific CV by ID
-  async getCVById(id) {
-    const cvs = await this.getCVs()
-    return cvs.find(cv => cv._id === id)
-  }
-}
-
-// Main Component
-const ModernCvBuilder = ({ cvId = null }) => {
+// Main Component with Fixed MongoDB Integration
+export default function EditCVPage() {
   const router = useRouter()
   const params = useParams()
-  const [formData, setFormData] = useState({
+  
+  // Get CV ID from route parameters
+  const cvId = params?.id // For /edit/[id] route
+  
+  // Default form structure
+  const getDefaultFormData = () => ({
     firstName: '',
     lastName: '',
     titulBefore: '',
@@ -901,61 +869,252 @@ const ModernCvBuilder = ({ cvId = null }) => {
     driverLicense: [],
     otherExperience: '',
   })
-  
+
+  // State management
+  const [formData, setFormData] = useState(getDefaultFormData())
   const [cvName, setCvName] = useState('Nový životopis')
+  const [currentCvId, setCurrentCvId] = useState(cvId)
+  
+  // Loading and error states
   const [isLoading, setIsLoading] = useState(false)
+  const [isInitialLoading, setIsInitialLoading] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
   const [lastSaved, setLastSaved] = useState(null)
   const [saveError, setSaveError] = useState(null)
-  const [currentCvId, setCurrentCvId] = useState(cvId)
-  const [isInitialLoading, setIsInitialLoading] = useState(false)
+  const [loadError, setLoadError] = useState(null)
+  
+  // Auto-save control
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
+  const lastDataSnapshotRef = useRef('')
+  const isInitialLoadRef = useRef(true)
+  
+  // UI state
   const [showTemplatesModal, setShowTemplatesModal] = useState(false)
   const [currentTemplate, setCurrentTemplate] = useState('Klasická')
 
   // Get locale for navigation
   const locale = params?.locale || 'sk'
 
+  // Debounced form data for auto-save
+  const debouncedFormData = useDebounce(formData, 2000)
+  const debouncedCvName = useDebounce(cvName, 2000)
+
+  // Enhanced API Helper Functions with proper error handling
+  const apiHelper = {
+    // Get specific CV by ID
+    async getCVById(id) {
+      try {
+        const response = await fetch(`/api/cvs/${id}`, {
+          cache: 'no-store'
+        })
+        
+        if (response.status === 404) {
+          return null
+        }
+        
+        const data = await response.json()
+        
+        if (!response.ok) {
+          throw new Error(data.error || `HTTP error! status: ${response.status}`)
+        }
+        
+        return data
+      } catch (error) {
+        console.error('Error fetching CV by ID:', error)
+        throw error
+      }
+    },
+
+    // Update existing CV
+    async updateCV(id, content, name = null) {
+      try {
+        const payload = { id, content }
+        if (name) payload.name = name
+        
+        const response = await fetch('/api/cvs/update', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        })
+        
+        const data = await response.json()
+        
+        if (!response.ok) {
+          throw new Error(data.error || `HTTP error! status: ${response.status}`)
+        }
+        
+        return data
+      } catch (error) {
+        console.error('Error updating CV:', error)
+        throw error
+      }
+    },
+
+    // Create new CV
+    async createCV(name, content) {
+      try {
+        const response = await fetch('/api/cvs', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ name, content }),
+        })
+        
+        const data = await response.json()
+        
+        if (!response.ok) {
+          throw new Error(data.error || `HTTP error! status: ${response.status}`)
+        }
+        
+        return data
+      } catch (error) {
+        console.error('Error creating CV:', error)
+        throw error
+      }
+    }
+  }
+
   // Load existing CV data when component mounts
   useEffect(() => {
     const loadCVData = async () => {
-      if (cvId && cvId !== 'new') {
-        setIsInitialLoading(true)
-        try {
-          const cvData = await apiHelper.getCVById(cvId)
-          if (cvData) {
-            setFormData({ ...formData, ...cvData.content })
-            setCvName(cvData.name || 'Nový životopis')
-            setCurrentCvId(cvId)
+      // If no cvId or cvId is 'new', don't try to load
+      if (!cvId || cvId === 'new') {
+        // Set initial snapshot for new CVs
+        const defaultData = getDefaultFormData()
+        const defaultName = 'Nový životopis'
+        
+        setFormData(defaultData)
+        setCvName(defaultName)
+        setCurrentCvId('new')
+        
+        lastDataSnapshotRef.current = JSON.stringify({
+          data: defaultData,
+          name: defaultName
+        })
+        isInitialLoadRef.current = false
+        return
+      }
+
+      setIsInitialLoading(true)
+      setLoadError(null)
+      
+      try {
+        console.log('Loading CV with ID:', cvId)
+        const cvData = await apiHelper.getCVById(cvId)
+        
+        if (cvData) {
+          console.log('Loaded CV data:', cvData)
+          
+          // Merge loaded data with default structure to ensure all fields exist
+          const mergedData = { 
+            ...getDefaultFormData(), 
+            ...cvData.content 
           }
-        } catch (error) {
-          console.error('Failed to load CV:', error)
-          setSaveError('Nepodařilo se načíst životopis')
-        } finally {
-          setIsInitialLoading(false)
+          
+          console.log('Merged form data:', mergedData)
+          
+          setFormData(mergedData)
+          setCvName(cvData.name || 'Nový životopis')
+          setCurrentCvId(cvId)
+          
+          // Set initial snapshot for change detection
+          lastDataSnapshotRef.current = JSON.stringify({
+            data: mergedData,
+            name: cvData.name || 'Nový životopis'
+          })
+          
+          // Set last saved time
+          if (cvData.updatedAt) {
+            setLastSaved(new Date(cvData.updatedAt))
+          } else if (cvData.date) {
+            setLastSaved(new Date(cvData.date))
+          }
+          
+          console.log('CV data loaded successfully')
+        } else {
+          console.error('CV not found')
+          setLoadError('Životopis nebyl nalezen')
+          // Redirect to account page after a delay
+          setTimeout(() => {
+            router.push(`/${locale}/ucet`)
+          }, 3000)
         }
+      } catch (error) {
+        console.error('Failed to load CV:', error)
+        setLoadError('Nepodařilo se načíst životopis: ' + error.message)
+      } finally {
+        setIsInitialLoading(false)
+        isInitialLoadRef.current = false
       }
     }
 
     loadCVData()
-  }, [cvId])
+  }, [cvId, locale, router])
+
+  // Track changes for auto-save
+  useEffect(() => {
+    if (!isInitialLoadRef.current) {
+      const currentSnapshot = JSON.stringify({
+        data: formData,
+        name: cvName
+      })
+      
+      const hasChanges = currentSnapshot !== lastDataSnapshotRef.current
+      setHasUnsavedChanges(hasChanges)
+      
+      console.log('Change detected:', hasChanges)
+    }
+  }, [formData, cvName])
 
   // Auto-save functionality
   useEffect(() => {
-    const autoSave = async () => {
-      if (currentCvId && currentCvId !== 'new' && !isInitialLoading) {
+    const performAutoSave = async () => {
+      if (currentCvId && currentCvId !== 'new' && hasUnsavedChanges && !isSaving && !isInitialLoadRef.current) {
+        console.log('Performing auto-save...')
+        setIsSaving(true)
+        setSaveError(null)
+        
         try {
-          await apiHelper.updateCV(currentCvId, formData)
+          await apiHelper.updateCV(currentCvId, debouncedFormData, debouncedCvName)
+          
+          // Update snapshot after successful save
+          const newSnapshot = JSON.stringify({
+            data: debouncedFormData,
+            name: debouncedCvName
+          })
+          lastDataSnapshotRef.current = newSnapshot
+          setHasUnsavedChanges(false)
           setLastSaved(new Date())
-          setSaveError(null)
+          
+          console.log('Auto-save successful')
         } catch (error) {
           console.error('Auto-save failed:', error)
+          setSaveError('Automatické uložení selhalo: ' + error.message)
+        } finally {
+          setIsSaving(false)
         }
       }
     }
 
-    // Debounce auto-save
-    const timeoutId = setTimeout(autoSave, 2000)
-    return () => clearTimeout(timeoutId)
-  }, [formData, cvName, currentCvId, isInitialLoading])
+    if (hasUnsavedChanges) {
+      performAutoSave()
+    }
+  }, [debouncedFormData, debouncedCvName, currentCvId, hasUnsavedChanges, isSaving])
+
+  // Form validation
+  const validateForm = () => {
+    const errors = []
+    
+    if (!formData.firstName?.trim()) errors.push('Jméno je povinné')
+    if (!formData.lastName?.trim()) errors.push('Příjmení je povinné')
+    if (!formData.email?.trim()) errors.push('Email je povinný')
+    else if (!/\S+@\S+\.\S+/.test(formData.email)) errors.push('Email má neplatný formát')
+    
+    return errors
+  }
 
   // Calculate form completion progress
   const progressPercentage = useMemo(() => {
@@ -991,7 +1150,7 @@ const ModernCvBuilder = ({ cvId = null }) => {
     return Math.round((filledFields / totalFields) * 100)
   }, [formData])
 
-  // Calculate quality score (similar to ATS score logic)
+  // Calculate quality score
   const qualityScore = useMemo(() => {
     let score = 0
     const maxScore = 100
@@ -1036,46 +1195,79 @@ const ModernCvBuilder = ({ cvId = null }) => {
     return Math.min(Math.round(score), maxScore)
   }, [formData])
 
-  const updateFormData = (field, value) => {
-    const newData = { ...formData, [field]: value }
-    setFormData(newData)
-  }
+  // Update form data with change tracking
+  const updateFormData = useCallback((field, value) => {
+    console.log(`Updating ${field}:`, value)
+    setFormData(prevData => ({
+      ...prevData,
+      [field]: value
+    }))
+    setSaveError(null) // Clear any previous save errors
+  }, [])
 
-  const handleBackClick = () => {
+  // Handle back navigation
+  const handleBackClick = useCallback(() => {
+    if (hasUnsavedChanges) {
+      const confirmLeave = window.confirm('Máte neuložené změny. Opravdu chcete opustit stránku?')
+      if (!confirmLeave) return
+    }
     router.push(`/${locale}/ucet`)
-  }
+  }, [hasUnsavedChanges, locale, router])
 
-  const handleTemplateSelect = (template) => {
-    setCurrentTemplate(template.name)
-    setShowTemplatesModal(false)
-    
-    // Here you can add logic to apply template-specific styling or structure
-    // For now, we'll just update the template reference
-    console.log('Selected template:', template)
-  }
-
+  // Manual save with validation
   const handleManualSave = async () => {
+    const validationErrors = validateForm()
+    if (validationErrors.length > 0) {
+      setSaveError('Opravte prosím následující chyby: ' + validationErrors.join(', '))
+      return
+    }
+
     setIsLoading(true)
     setSaveError(null)
     
     try {
       if (currentCvId && currentCvId !== 'new') {
         // Update existing CV
-        await apiHelper.updateCV(currentCvId, formData)
+        console.log('Manually updating CV:', currentCvId)
+        await apiHelper.updateCV(currentCvId, formData, cvName)
+        setLastSaved(new Date())
       } else {
         // Create new CV
+        console.log('Creating new CV')
         const result = await apiHelper.createCV(cvName, formData)
         setCurrentCvId(result.insertedId)
+        setLastSaved(new Date())
+        
+        // Update URL to reflect the new CV ID
+        const newUrl = `/${locale}/ucet/edit/${result.insertedId}`
+        window.history.replaceState({}, '', newUrl)
       }
       
-      setLastSaved(new Date())
+      // Update snapshot after successful save
+      const newSnapshot = JSON.stringify({
+        data: formData,
+        name: cvName
+      })
+      lastDataSnapshotRef.current = newSnapshot
+      setHasUnsavedChanges(false)
+      
+      console.log('Manual save successful')
     } catch (error) {
       console.error('Save failed:', error)
-      setSaveError('Nepodařilo se uložit životopis. Zkuste to prosím znovu.')
+      setSaveError('Nepodařilo se uložit životopis: ' + error.message)
     } finally {
       setIsLoading(false)
     }
   }
+
+  // Handle template selection
+  const handleTemplateSelect = useCallback((template) => {
+    setCurrentTemplate(template.name)
+    setShowTemplatesModal(false)
+    
+    // Here you can add logic to apply template-specific styling or structure
+    console.log('Selected template:', template)
+  }, [])
 
   // Field templates
   const educationTemplate = [
@@ -1105,12 +1297,34 @@ const ModernCvBuilder = ({ cvId = null }) => {
     return { isValid, message: isValid ? '' : 'Zadejte platný email' }
   }
 
+  // Loading state
   if (isInitialLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600">Načítání životopisu...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Error state
+  if (loadError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+        <div className="text-center max-w-md mx-auto p-6">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertCircle className="w-8 h-8 text-red-600" />
+          </div>
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">Chyba načítání</h2>
+          <p className="text-gray-600 mb-4">{loadError}</p>
+          <button
+            onClick={() => router.push(`/${locale}/ucet`)}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Zpět na přehled
+          </button>
         </div>
       </div>
     )
@@ -1137,16 +1351,28 @@ const ModernCvBuilder = ({ cvId = null }) => {
               
               {/* Status indicators */}
               <div className="flex items-center gap-4">
-                {lastSaved && (
+                {isSaving && (
+                  <div className="flex items-center gap-1 text-xs text-blue-600">
+                    <div className="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                    <span>Ukládání...</span>
+                  </div>
+                )}
+                {lastSaved && !isSaving && (
                   <div className="flex items-center gap-1 text-xs text-green-600">
                     <CheckCircle className="w-3 h-3" />
-                    <span>Auto-uloženo {lastSaved.toLocaleTimeString()}</span>
+                    <span>Uloženo {lastSaved.toLocaleTimeString()}</span>
+                  </div>
+                )}
+                {hasUnsavedChanges && !isSaving && (
+                  <div className="flex items-center gap-1 text-xs text-amber-600">
+                    <AlertCircle className="w-3 h-3" />
+                    <span>Neuložené změny</span>
                   </div>
                 )}
                 {saveError && (
                   <div className="flex items-center gap-1 text-xs text-red-600">
                     <AlertCircle className="w-3 h-3" />
-                    <span>{saveError}</span>
+                    <span title={saveError}>Chyba uložení</span>
                   </div>
                 )}
               </div>
@@ -1174,6 +1400,20 @@ const ModernCvBuilder = ({ cvId = null }) => {
         </div>
       </div>
 
+      {/* Error display */}
+      {saveError && (
+        <div className="bg-red-50 border-l-4 border-red-400 p-4 mx-6 mt-4">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <AlertCircle className="h-5 w-5 text-red-400" />
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-red-700">{saveError}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="grid h-full grid-cols-1 lg:grid-cols-2">
         {/* Left Side - Form */}
         <div className="overflow-y-auto h-full">
@@ -1187,7 +1427,6 @@ const ModernCvBuilder = ({ cvId = null }) => {
                 onChange={setCvName}
                 placeholder="např. CV - Frontend Developer"
                 icon={FileText}
-                defaultValue="Nový životopis"
               />
             </div>
 
@@ -1433,7 +1672,7 @@ const ModernCvBuilder = ({ cvId = null }) => {
             <div className="mt-8 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 p-6">
               <button
                 onClick={handleManualSave}
-                disabled={isLoading}
+                disabled={isLoading || isSaving}
                 className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:from-blue-400 disabled:to-indigo-400 text-white font-semibold py-4 px-6 rounded-lg transition-colors flex items-center justify-center gap-2 text-lg"
               >
                 {isLoading ? (
@@ -1481,5 +1720,3 @@ const ModernCvBuilder = ({ cvId = null }) => {
     </div>
   )
 }
-
-export default ModernCvBuilder

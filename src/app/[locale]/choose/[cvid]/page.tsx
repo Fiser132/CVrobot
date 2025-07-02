@@ -1,19 +1,17 @@
 'use client'
 import React, { useEffect, useState } from 'react';
-import { Download, Shield, CheckCircle, Clock, FileText, CreditCard, ArrowLeft, Star, Sparkles, Zap, Code, Database, Server, Webhook, Terminal, GitBranch, Cpu, Globe } from 'lucide-react';
+import { Download, Shield, CheckCircle, Clock, FileText, CreditCard, ArrowLeft, Star, Sparkles, Zap, Code, Database, Server, Webhook, Terminal, GitBranch, Cpu, Globe, AlertCircle } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 
-// Animated Background Component
+// Animated Background Component (same as before)
 const AnimatedBackground = () => {   
   return (     
     <div className="inset-0 overflow-hidden pointer-events-none">       
       <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-purple-50">         
-        {/* Floating Circles */}         
         <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-blue-400/10 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>         
         <div className="absolute top-1/3 right-1/4 w-72 h-72 bg-purple-400/10 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-1000"></div>         
         <div className="absolute bottom-1/4 left-1/3 w-72 h-72 bg-pink-400/10 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-2000"></div>                  
         
-        {/* Grid Pattern */}         
         <div className="absolute inset-0 opacity-20">           
           <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">             
             <defs>               
@@ -29,7 +27,103 @@ const AnimatedBackground = () => {
   ); 
 };
 
-// Enhanced Version Card Component
+// API Helper Functions - Same pattern as builder/edit page
+const apiHelper = {
+  // Get specific CV by ID
+  async getCVById(id) {
+    try {
+      const response = await fetch(`/api/cvs/${id}`, {
+        cache: 'no-store'
+      })
+      
+      if (response.status === 404) {
+        return null
+      }
+      
+      const data = await response.json()
+      
+      if (!response.ok) {
+        throw new Error(data.error || `HTTP error! status: ${response.status}`)
+      }
+      
+      return data
+    } catch (error) {
+      console.error('Error fetching CV by ID:', error)
+      throw error
+    }
+  }
+}
+
+// Calculate Quality Score (same as dashboard)
+const calculateQualityScore = (content) => {
+  let score = 0
+  
+  // Basic info (30 points max)
+  if (content.firstName && content.lastName) score += 8
+  if (content.email) score += 8
+  if (content.phone) score += 8
+  if (content.photo) score += 6
+  
+  // Address (10 points max)
+  if (content.street && content.city) score += 5
+  if (content.zip) score += 3
+  if (content.region) score += 2
+  
+  // Professional info (40 points max)
+  if (content.workExperience?.length > 0) {
+    score += 15
+    const detailedWork = content.workExperience.filter(job => 
+      job.company && job.position && job.description && job.description.length > 50
+    )
+    score += Math.min(detailedWork.length * 5, 15)
+  }
+  
+  if (content.education?.length > 0) {
+    score += 10
+    const detailedEducation = content.education.filter(edu => 
+      edu.school && edu.degree && edu.field
+    )
+    score += Math.min(detailedEducation.length * 3, 10)
+  }
+  
+  // Additional sections (20 points max)
+  if (content.languages?.length > 0) score += 5
+  if (content.otherExperience && content.otherExperience.length > 100) score += 8
+  if (content.driverLicense?.length > 0) score += 2
+  if (content.website) score += 3
+  if (content.titulBefore || content.titulAfter) score += 2
+  
+  return Math.min(Math.round(score), 100)
+}
+
+// Generate CV Title from content
+const generateCVTitle = (content) => {
+  // Try to create a meaningful title from the CV content
+  let title = ''
+  
+  if (content.firstName && content.lastName) {
+    title = `${content.firstName} ${content.lastName}`
+  }
+  
+  // Add position from latest work experience
+  if (content.workExperience?.length > 0) {
+    const latestJob = content.workExperience[0]
+    if (latestJob.position) {
+      title += title ? ` - ${latestJob.position}` : latestJob.position
+    }
+  }
+  
+  // Fallback titles
+  if (!title && content.firstName) {
+    title = `${content.firstName} CV`
+  } else if (!title) {
+    title = 'Professional CV'
+  }
+  
+  return title
+}
+
+// Enhanced Version Card Component (same as before)
 const VersionCard = ({ version, isSelected, onSelect }) => {
   const techFeatures = {
     basic: [
@@ -154,7 +248,7 @@ const VersionCard = ({ version, isSelected, onSelect }) => {
   );
 };
 
-// Tech Specs Component
+// Tech Specs Component (same as before)
 const TechSpecs = ({ selectedVersion }) => {
   const specs = {
     basic: {
@@ -219,8 +313,8 @@ const TechSpecs = ({ selectedVersion }) => {
   );
 };
 
-// Enhanced CV Preview Component
-const CvPreview = ({ cvData, photoPreview, selectedVersion }) => {
+// Enhanced CV Preview Component with Real Data
+const CvPreview = ({ cvData, selectedVersion, qualityScore }) => {
   if (!cvData) {
     return (
       <div className="bg-white/70 backdrop-blur-lg rounded-2xl p-8 text-center shadow-xl border border-gray-200/50">
@@ -233,6 +327,11 @@ const CvPreview = ({ cvData, photoPreview, selectedVersion }) => {
       </div>
     );
   }
+
+  // Generate display name from CV content
+  const displayName = cvData.content?.firstName && cvData.content?.lastName 
+    ? `${cvData.content.firstName} ${cvData.content.lastName}` 
+    : cvData.name || 'Professional CV';
 
   return (
     <div className="bg-white/70 backdrop-blur-lg border border-gray-200/50 rounded-2xl p-8 shadow-xl">
@@ -247,7 +346,7 @@ const CvPreview = ({ cvData, photoPreview, selectedVersion }) => {
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-2">
             <h3 className="text-xl font-bold text-gray-900">
-              {cvData.name || 'Untitled Resume'}
+              {displayName}
             </h3>
             {selectedVersion?.id === 'pro' && (
               <span className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-3 py-1 rounded-full text-xs font-bold tracking-wide">
@@ -258,6 +357,18 @@ const CvPreview = ({ cvData, photoPreview, selectedVersion }) => {
           <p className="text-gray-600 text-sm">
             PDF Format • A4 • {selectedVersion?.id === 'pro' ? 'Watermark-free Premium' : 'Basic with Watermark'}
           </p>
+          {qualityScore && (
+            <div className="flex items-center gap-2 mt-2">
+              <span className="text-xs font-medium text-gray-600">Quality Score:</span>
+              <span className={`text-xs font-bold px-2 py-1 rounded-full ${
+                qualityScore >= 80 ? 'bg-green-100 text-green-700' :
+                qualityScore >= 60 ? 'bg-yellow-100 text-yellow-700' :
+                'bg-red-100 text-red-700'
+              }`}>
+                {qualityScore}%
+              </span>
+            </div>
+          )}
         </div>
       </div>
       
@@ -298,8 +409,49 @@ const CvPreview = ({ cvData, photoPreview, selectedVersion }) => {
         </div>
       </div>
 
-      {selectedVersion?.id === 'pro' && (
+      {/* CV Content Preview */}
+      {cvData.content && (
         <div className="border-t border-gray-200/30 pt-6">
+          <h4 className="font-bold mb-4 text-gray-900">CV Content Summary</h4>
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <span className="text-gray-600">Personal Info:</span>
+                <span className={`font-medium ${
+                  cvData.content.firstName && cvData.content.lastName && cvData.content.email 
+                    ? 'text-green-600' : 'text-yellow-600'
+                }`}>
+                  {cvData.content.firstName && cvData.content.lastName && cvData.content.email 
+                    ? 'Complete' : 'Basic'}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Work Experience:</span>
+                <span className="font-medium text-gray-900">
+                  {cvData.content.workExperience?.length || 0} jobs
+                </span>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <span className="text-gray-600">Education:</span>
+                <span className="font-medium text-gray-900">
+                  {cvData.content.education?.length || 0} degrees
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Languages:</span>
+                <span className="font-medium text-gray-900">
+                  {cvData.content.languages?.length || 0} languages
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {selectedVersion?.id === 'pro' && (
+        <div className="border-t border-gray-200/30 pt-6 mt-6">
           <h4 className="font-bold mb-4 text-gray-900">Pro Features Active</h4>
           <div className="grid grid-cols-3 gap-4">
             <div className="text-center">
@@ -490,7 +642,7 @@ const PaymentSummary = ({ cvName, selectedVersion, onPayment, loading }) => {
   );
 };
 
-// Version Selection Component
+// Version Selection Component (same as before)
 const VersionSelector = ({ selectedVersion, onVersionChange }) => {
   const versions = [
     {
@@ -535,7 +687,7 @@ const VersionSelector = ({ selectedVersion, onVersionChange }) => {
   );
 };
 
-// Progress Indicator Component
+// Progress Indicator Component (same as before)
 const ProgressIndicator = () => {
   return (
     <div className="flex items-center justify-center mb-12">
@@ -565,40 +717,55 @@ const ProgressIndicator = () => {
   );
 };
 
-// Main Payment Page Component
+// Main Payment Page Component with Real MongoDB Integration
 export default function PaymentPage({ params }) {
   const [loading, setLoading] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [cvName, setCvName] = useState(null);
   const [cvData, setCvData] = useState(null);
-  const [photoPreview, setPhotoPreview] = useState(null);
-  const [fetchError, setFetchError] = useState(false);
+  const [qualityScore, setQualityScore] = useState(null);
+  const [fetchError, setFetchError] = useState(null);
   const [selectedVersion, setSelectedVersion] = useState(null);
   const searchParams = useSearchParams();
   
   // Get locale and cvId from URL
   const locale = params.locale;
-  const cvId = searchParams.get('cvId') || '12345';
+  const cvId = searchParams.get('cvId') || params?.cvid;
   const defaultVersion = searchParams.get('version') || 'basic';
 
+  // Load real CV data from MongoDB
   useEffect(() => {
-    if (!cvId) return;
-
     const fetchCvData = async () => {
-      try {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        const mockData = {
-          id: cvId,
-          name: 'Senior Full-Stack Developer',
-          cvName: 'Senior Full-Stack Developer Resume',
-          photo: null,
-          createdAt: new Date().toISOString()
-        };
+      if (!cvId || cvId === 'new') {
+        setFetchError('No CV ID provided');
+        setIsInitialLoading(false);
+        return;
+      }
 
-        setCvData(mockData);
-        setPhotoPreview(mockData.photo);
-        setCvName(mockData.cvName || `Resume #${cvId}`);
+      try {
+        setIsInitialLoading(true);
+        console.log('Loading CV data for ID:', cvId);
         
+        const cvData = await apiHelper.getCVById(cvId);
+        
+        if (!cvData) {
+          setFetchError('CV not found');
+          setIsInitialLoading(false);
+          return;
+        }
+
+        console.log('Loaded CV data:', cvData);
+        
+        // Set CV data and calculate quality score
+        setCvData(cvData);
+        const score = calculateQualityScore(cvData.content || {});
+        setQualityScore(score);
+        
+        // Generate CV name from content or use stored name
+        const generatedTitle = generateCVTitle(cvData.content || {});
+        setCvName(cvData.name || generatedTitle);
+        
+        // Set default version based on URL parameter
         if (defaultVersion === 'pro') {
           setSelectedVersion({
             id: 'pro',
@@ -618,9 +785,13 @@ export default function PaymentPage({ params }) {
             recommended: false
           });
         }
+        
+        console.log('CV data loaded successfully');
       } catch (error) {
         console.error('Error loading CV:', error);
-        setFetchError(true);
+        setFetchError('Failed to load CV: ' + error.message);
+      } finally {
+        setIsInitialLoading(false);
       }
     };
 
@@ -631,152 +802,176 @@ export default function PaymentPage({ params }) {
     setSelectedVersion(version);
   };
 
- const handlePayment = async () => {
-  if (!cvId || !selectedVersion) return;
-  
-  setLoading(true);
-  
-  try {
-    // If it's the free version, redirect to download page
-    if (selectedVersion.price === 0) {
-      window.location.href = `/${locale}/downloadfree/${cvId}`;
-      return;
-    }
+  const handlePayment = async () => {
+    if (!cvId || !selectedVersion) return;
     
-    console.log('Calling payment API with:', { locale, cvId, version: selectedVersion.id });
-    
-    // First, try to create the checkout session
-    const response = await fetch('/api/stripe/checkout', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        locale,
-        cvId,
-        version: selectedVersion.id,
-        amount: selectedVersion.price
-      }),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('API Error:', errorText);
-      
-      // Fallback: redirect to a payment page with parameters
-      const fallbackUrl = `/payment-fallback?cvId=${cvId}&version=${selectedVersion.id}&amount=${selectedVersion.price}&locale=${locale}`;
-      window.location.href = fallbackUrl;
-      return;
-    }
-
-    const data = await response.json();
-    console.log('Session data received:', data);
-    
-    if (!data.id && !data.url) {
-      throw new Error('No session ID or URL returned from API');
-    }
-
-    // If we get a direct URL, redirect to it
-    if (data.url) {
-      window.location.href = data.url;
-      return;
-    }
-    
-    // Otherwise, try to load Stripe
-    const publishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
-    
-    if (!publishableKey) {
-      console.warn('Stripe publishable key not found, using direct redirect');
-      // Fallback to direct redirect if available
-      if (data.redirect_url) {
-        window.location.href = data.redirect_url;
-        return;
-      }
-      throw new Error('Payment configuration error');
-    }
+    setLoading(true);
     
     try {
-      // Dynamic import with error handling
-      const stripeModule = await import('@stripe/stripe-js').catch(err => {
-        console.warn('Failed to load Stripe module:', err);
-        return null;
+      // If it's the free version, redirect to download page
+      if (selectedVersion.price === 0) {
+        window.location.href = `/${locale}/downloadfree/${cvId}`;
+        return;
+      }
+      
+      console.log('Calling payment API with:', { locale, cvId, version: selectedVersion.id });
+      
+      // First, try to create the checkout session
+      const response = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          locale,
+          cvId,
+          version: selectedVersion.id,
+          amount: selectedVersion.price
+        }),
       });
-      
-      if (!stripeModule || !stripeModule.loadStripe) {
-        console.warn('Stripe module not available, using fallback');
-        // Try direct redirect to Stripe checkout URL
-        const checkoutUrl = `https://checkout.stripe.com/pay/${data.id}`;
-        window.location.href = checkoutUrl;
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('API Error:', errorText);
+        
+        // Fallback: redirect to a payment page with parameters
+        const fallbackUrl = `/payment-fallback?cvId=${cvId}&version=${selectedVersion.id}&amount=${selectedVersion.price}&locale=${locale}`;
+        window.location.href = fallbackUrl;
         return;
       }
 
-      const stripe = await stripeModule.loadStripe(publishableKey);
+      const data = await response.json();
+      console.log('Session data received:', data);
       
-      if (!stripe) {
-        console.warn('Failed to initialize Stripe, using direct redirect');
-        window.location.href = data.redirect_url || `/payment-error?reason=stripe-init-failed`;
+      if (!data.id && !data.url) {
+        throw new Error('No session ID or URL returned from API');
+      }
+
+      // If we get a direct URL, redirect to it
+      if (data.url) {
+        window.location.href = data.url;
         return;
       }
       
-      console.log('Redirecting to Stripe checkout...');
-      const { error } = await stripe.redirectToCheckout({ sessionId: data.id });
+      // Otherwise, try to load Stripe
+      const publishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
       
-      if (error) {
-        console.error('Stripe redirect error:', error);
-        throw new Error(`Stripe error: ${error.message}`);
+      if (!publishableKey) {
+        console.warn('Stripe publishable key not found, using direct redirect');
+        if (data.redirect_url) {
+          window.location.href = data.redirect_url;
+          return;
+        }
+        throw new Error('Payment configuration error');
       }
       
-    } catch (stripeError) {
-      console.error('Stripe integration error:', stripeError);
-      // Final fallback
-      const fallbackUrl = `/payment-fallback?cvId=${cvId}&version=${selectedVersion.id}&amount=${selectedVersion.price}&locale=${locale}&error=stripe-failed`;
-      window.location.href = fallbackUrl;
-    }
-    
-  } catch (error) {
-    console.error('Payment error details:', error);
-    
-    // User-friendly error handling
-    const errorMessage = error.message.includes('fetch') 
-      ? 'Network error. Please check your connection and try again.'
-      : error.message.includes('Stripe')
-      ? 'Payment system temporarily unavailable. Please try again in a few moments.'
-      : `Payment error: ${error.message}`;
-      
-    alert(errorMessage);
-    
-    // Offer alternative contact method
-    if (confirm('Would you like to contact support for manual payment processing?')) {
-      const supportEmail = 'support@yoursite.com';
-      const subject = `Manual Payment Request - CV ${cvId}`;
-      const body = `Hello,\n\nI encountered an error during checkout for:\n- Product: ${cvName}\n- Version: ${selectedVersion.name}\n- Amount: ${selectedVersion.price} Kč\n- CV ID: ${cvId}\n\nPlease assist with manual payment processing.\n\nError details: ${error.message}`;
-      
-      window.location.href = `mailto:${supportEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    }
-  } finally {
-    setLoading(false);
-  }
-};
+      try {
+        // Dynamic import with error handling
+        const stripeModule = await import('@stripe/stripe-js').catch(err => {
+          console.warn('Failed to load Stripe module:', err);
+          return null;
+        });
+        
+        if (!stripeModule || !stripeModule.loadStripe) {
+          console.warn('Stripe module not available, using fallback');
+          const checkoutUrl = `https://checkout.stripe.com/pay/${data.id}`;
+          window.location.href = checkoutUrl;
+          return;
+        }
 
-  const handleGoBack = () => {
-    window.history.back();
+        const stripe = await stripeModule.loadStripe(publishableKey);
+        
+        if (!stripe) {
+          console.warn('Failed to initialize Stripe, using direct redirect');
+          window.location.href = data.redirect_url || `/payment-error?reason=stripe-init-failed`;
+          return;
+        }
+        
+        console.log('Redirecting to Stripe checkout...');
+        const { error } = await stripe.redirectToCheckout({ sessionId: data.id });
+        
+        if (error) {
+          console.error('Stripe redirect error:', error);
+          throw new Error(`Stripe error: ${error.message}`);
+        }
+        
+      } catch (stripeError) {
+        console.error('Stripe integration error:', stripeError);
+        const fallbackUrl = `/payment-fallback?cvId=${cvId}&version=${selectedVersion.id}&amount=${selectedVersion.price}&locale=${locale}&error=stripe-failed`;
+        window.location.href = fallbackUrl;
+      }
+      
+    } catch (error) {
+      console.error('Payment error details:', error);
+      
+      const errorMessage = error.message.includes('fetch') 
+        ? 'Network error. Please check your connection and try again.'
+        : error.message.includes('Stripe')
+        ? 'Payment system temporarily unavailable. Please try again in a few moments.'
+        : `Payment error: ${error.message}`;
+        
+      alert(errorMessage);
+      
+      if (confirm('Would you like to contact support for manual payment processing?')) {
+        const supportEmail = 'support@yoursite.com';
+        const subject = `Manual Payment Request - CV ${cvId}`;
+        const body = `Hello,\n\nI encountered an error during checkout for:\n- Product: ${cvName}\n- Version: ${selectedVersion.name}\n- Amount: ${selectedVersion.price} €\n- CV ID: ${cvId}\n\nPlease assist with manual payment processing.\n\nError details: ${error.message}`;
+        
+        window.location.href = `mailto:${supportEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
+  const handleGoBack = () => {
+    // Navigate back to the CV builder/edit page
+    if (cvId && cvId !== 'new') {
+      window.location.href = `/${locale}/ucet/edit/${cvId}`;
+    } else {
+      window.location.href = `/${locale}/ucet`;
+    }
+  };
+
+  // Loading state
+  if (isInitialLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+        <AnimatedBackground />
+        <div className="text-center relative z-10">
+          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <h1 className="text-xl font-semibold text-gray-900 mb-2">Loading your CV...</h1>
+          <p className="text-gray-600">Preparing deployment options</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
   if (fetchError) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-        <div className="text-center">
+        <AnimatedBackground />
+        <div className="text-center relative z-10">
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <FileText className="w-8 h-8 text-red-600" />
+            <AlertCircle className="w-8 h-8 text-red-600" />
           </div>
-          <h1 className="text-xl font-semibold text-gray-900 mb-2">Error</h1>
-          <p className="text-gray-600 mb-6">Unable to load the requested resume</p>
-          <button
-            onClick={handleGoBack}
-            className="text-blue-500 hover:text-blue-600 font-medium"
-          >
-            Go back
-          </button>
+          <h1 className="text-xl font-semibold text-gray-900 mb-2">Error Loading CV</h1>
+          <p className="text-gray-600 mb-6">{fetchError}</p>
+          <div className="space-x-4">
+            <button
+              onClick={handleGoBack}
+              className="text-blue-500 hover:text-blue-600 font-medium"
+            >
+              Go back to CV builder
+            </button>
+            <button
+              onClick={() => window.location.href = `/${locale}/ucet`}
+              className="text-gray-500 hover:text-gray-600 font-medium"
+            >
+              Go to dashboard
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -796,13 +991,25 @@ export default function PaymentPage({ params }) {
                 className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
               >
                 <ArrowLeft className="w-5 h-5" />
-                <span className="font-medium">Back</span>
+                <span className="font-medium">Back to Builder</span>
               </button>
               <div className="w-px h-6 bg-gray-300"></div>
               <h1 className="text-2xl font-bold text-gray-900">
-                Resume Deployment
+                CV Deployment
               </h1>
             </div>
+            {qualityScore && (
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-600">Quality Score:</span>
+                <span className={`px-3 py-1 rounded-full text-sm font-bold ${
+                  qualityScore >= 80 ? 'bg-green-100 text-green-700' :
+                  qualityScore >= 60 ? 'bg-yellow-100 text-yellow-700' :
+                  'bg-red-100 text-red-700'
+                }`}>
+                  {qualityScore}%
+                </span>
+              </div>
+            )}
           </div>
         </div>
       </header>
@@ -829,8 +1036,8 @@ export default function PaymentPage({ params }) {
 
             <CvPreview 
               cvData={cvData} 
-              photoPreview={photoPreview} 
               selectedVersion={selectedVersion}
+              qualityScore={qualityScore}
             />
 
             <TechSpecs selectedVersion={selectedVersion} />
@@ -839,13 +1046,13 @@ export default function PaymentPage({ params }) {
           {/* Right Column - Payment */}
           <div className="xl:col-span-1">
             <PaymentSummary
-              cvName={cvName || 'Resume'}
+              cvName={cvName || 'Professional CV'}
               selectedVersion={selectedVersion}
               onPayment={handlePayment}
               loading={loading}
             />
 
-            {/* Additional Tech Info */}
+            {/* Additional Info */}
             <div className="mt-8 bg-blue-50 rounded-2xl p-6 border border-blue-200">
               <div className="flex items-start gap-3">
                 <Clock className="w-5 h-5 text-blue-500 mt-0.5" />

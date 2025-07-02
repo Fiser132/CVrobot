@@ -7,7 +7,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export async function POST(request: Request) {
   try {
-    console.log('Stripe API called');
+    console.log('Stripe subscription API called');
     
     // Check if Stripe key exists
     if (!process.env.STRIPE_SECRET_KEY) {
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     console.log('Request body:', body);
     
-    const { locale, cvId } = body;
+    const { locale, cvId, customerId } = body;
 
     if (!locale || !cvId) {
       console.error('Missing required parameters:', { locale, cvId });
@@ -40,7 +40,7 @@ export async function POST(request: Request) {
       );
     }
 
-    console.log('Creating Stripe session...');
+    console.log('Creating Stripe subscription session...');
     
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
@@ -49,24 +49,41 @@ export async function POST(request: Request) {
           price_data: {
             currency: 'eur',
             product_data: {
-              name: 'Stažení životopisu',
+              name: 'Měsíční předplatné životopisů',
+              description: 'Neomezený přístup k tvorbě a stahování životopisů',
             },
-            unit_amount: 1000, 
+            unit_amount: 1000, // 10 EUR per month
+            recurring: {
+              interval: 'month',
+            },
           },
           quantity: 1,
         },
       ],
-      mode: 'payment',
-      success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/${locale}/stahni/${cvId}?session_id={CHECKOUT_SESSION_ID}`,
+      mode: 'subscription',
+      success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/${locale}/stahni/${cvId}?session_id={CHECKOUT_SESSION_ID}&success=1`,
       cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/${locale}/platba?canceled=1&cvId=${cvId}`,
+      customer: customerId, // Optional: if you have existing customer
+      allow_promotion_codes: true, // Allow discount codes
+      billing_address_collection: 'required',
+      subscription_data: {
+        trial_period_days: 7, // Optional: 7-day free trial
+        metadata: {
+          locale: locale,
+          cvId: cvId, // Track which CV triggered the subscription
+        },
+      },
     });
 
-    console.log('Session created successfully:', session.id);
+    console.log('Subscription session created successfully:', session.id);
 
-    return NextResponse.json({ id: session.id });
+    return NextResponse.json({ 
+      id: session.id,
+      url: session.url 
+    });
     
   } catch (error) {
-    console.error('Stripe API error:', error);
+    console.error('Stripe subscription API error:', error);
     
     if (error instanceof Stripe.errors.StripeError) {
       return NextResponse.json(

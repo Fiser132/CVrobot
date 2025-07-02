@@ -27,7 +27,6 @@ import {
     TrendingUp,
     Target
 } from 'lucide-react'
-import { PDFViewer } from '@react-pdf/renderer'
 
 // Animated Background Component
 const AnimatedBackground = () => {
@@ -59,6 +58,8 @@ interface CV {
     _id: string
     name: string
     date: string
+    updatedAt?: string
+    createdAt?: string
     content: Record<string, any>
     archived?: boolean
     kvalitaCV?: number
@@ -79,6 +80,149 @@ interface FilterState {
     viewMode: 'grid' | 'list'
 }
 
+// Enhanced API Helper Functions
+const apiHelper = {
+    // Get all CVs
+    async getCVs() {
+        try {
+            const response = await fetch('/api/cvs', {
+                cache: 'no-store'
+            })
+            
+            const data = await response.json()
+            
+            if (!response.ok) {
+                throw new Error(data.error || `HTTP error! status: ${response.status}`)
+            }
+            
+            return data
+        } catch (error) {
+            console.error('Error fetching CVs:', error)
+            throw error
+        }
+    },
+
+    // Create new CV
+    async createCV(name, content = {}) {
+        try {
+            const response = await fetch('/api/cvs', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ name, content }),
+            })
+            
+            const data = await response.json()
+            
+            if (!response.ok) {
+                throw new Error(data.error || `HTTP error! status: ${response.status}`)
+            }
+            
+            return data
+        } catch (error) {
+            console.error('Error creating CV:', error)
+            throw error
+        }
+    },
+
+    // Delete CV - FIXED: Updated to use the correct delete endpoint
+    async deleteCV(id) {
+        try {
+            const response = await fetch(`/api/cvs/delete?id=${id}`, {
+                method: 'DELETE',
+            })
+            
+            const data = await response.json()
+            
+            if (!response.ok) {
+                throw new Error(data.error || `HTTP error! status: ${response.status}`)
+            }
+            
+            return data
+        } catch (error) {
+            console.error('Error deleting CV:', error)
+            throw error
+        }
+    }
+}
+
+// Calculate CV Quality Score
+const calculateQualityScore = (content) => {
+    let score = 0
+    
+    // Basic info (30 points max)
+    if (content.firstName && content.lastName) score += 8
+    if (content.email) score += 8
+    if (content.phone) score += 8
+    if (content.photo) score += 6
+    
+    // Address (10 points max)
+    if (content.street && content.city) score += 5
+    if (content.zip) score += 3
+    if (content.region) score += 2
+    
+    // Professional info (40 points max)
+    if (content.workExperience?.length > 0) {
+        score += 15
+        const detailedWork = content.workExperience.filter(job => 
+            job.company && job.position && job.description && job.description.length > 50
+        )
+        score += Math.min(detailedWork.length * 5, 15)
+    }
+    
+    if (content.education?.length > 0) {
+        score += 10
+        const detailedEducation = content.education.filter(edu => 
+            edu.school && edu.degree && edu.field
+        )
+        score += Math.min(detailedEducation.length * 3, 10)
+    }
+    
+    // Additional sections (20 points max)
+    if (content.languages?.length > 0) score += 5
+    if (content.otherExperience && content.otherExperience.length > 100) score += 8
+    if (content.driverLicense?.length > 0) score += 2
+    if (content.website) score += 3
+    if (content.titulBefore || content.titulAfter) score += 2
+    
+    return Math.min(Math.round(score), 100)
+}
+
+// Calculate Completeness Score
+const calculateCompletenessScore = (content) => {
+    const requiredFields = ['firstName', 'lastName', 'email', 'phone']
+    const optionalFields = ['titulBefore', 'titulAfter', 'birthDate', 'gender', 'street', 'city', 'website', 'photo', 'otherExperience']
+    const arrayFields = ['education', 'workExperience', 'languages', 'driverLicense']
+    
+    let filledFields = 0
+    let totalFields = requiredFields.length + optionalFields.length + arrayFields.length
+    
+    // Check required fields (worth more)
+    requiredFields.forEach(field => {
+        if (content[field] && content[field].toString().trim()) {
+            filledFields += 2
+        }
+    })
+    totalFields += requiredFields.length
+    
+    // Check optional fields
+    optionalFields.forEach(field => {
+        if (content[field] && content[field].toString().trim()) {
+            filledFields += 1
+        }
+    })
+    
+    // Check array fields
+    arrayFields.forEach(field => {
+        if (content[field] && content[field].length > 0) {
+            filledFields += 1
+        }
+    })
+    
+    return Math.round((filledFields / totalFields) * 100)
+}
+
 const CVDashboard = () => {
     const { user } = useUser()
     const router = useRouter()
@@ -87,6 +231,7 @@ const CVDashboard = () => {
     const [modal, setModal] = useState<ModalState>({ isOpen: false, type: null })
     const [isCreating, setIsCreating] = useState(false)
     const [isDeleting, setIsDeleting] = useState(false)
+    const [error, setError] = useState<string | null>(null)
     const [filters, setFilters] = useState<FilterState>({
         search: '',
         archived: false,
@@ -99,11 +244,11 @@ const CVDashboard = () => {
     const locale = params.locale ?? 'sk'
     const withLocale = useCallback((path: string) => `/${locale}${path}`, [locale])
 
-    // Enhanced CV data with quality score
+    // Enhanced CV data with quality and completeness scores
     const enhancedCvs = cvs.map(cv => ({
         ...cv,
-        kvalitaCV: cv.kvalitaCV || Math.floor(Math.random() * 40) + 60, // Mock quality score
-        completeness: cv.completeness || Math.floor(Math.random() * 30) + 70
+        kvalitaCV: calculateQualityScore(cv.content || {}),
+        completeness: calculateCompletenessScore(cv.content || {})
     }))
 
     const filteredAndSortedCvs = enhancedCvs
@@ -121,7 +266,10 @@ const CVDashboard = () => {
                 case 'kvalitaCV':
                     return (a.kvalitaCV - b.kvalitaCV) * multiplier
                 default:
-                    return (new Date(a.date).getTime() - new Date(b.date).getTime()) * multiplier
+                    // Use updatedAt if available, fallback to date
+                    const aDate = new Date(a.updatedAt || a.date).getTime()
+                    const bDate = new Date(b.updatedAt || b.date).getTime()
+                    return (aDate - bDate) * multiplier
             }
         })
 
@@ -130,11 +278,12 @@ const CVDashboard = () => {
 
         try {
             setIsLoading(true)
-            const response = await fetch('/api/cvs')
-            const data = await response.json()
+            setError(null)
+            const data = await apiHelper.getCVs()
             setCvs(data)
         } catch (error) {
             console.error('Failed to fetch CVs:', error)
+            setError('Nepodařilo se načíst životopisy. Zkuste to prosím znovu.')
         } finally {
             setIsLoading(false)
         }
@@ -152,28 +301,35 @@ const CVDashboard = () => {
         setModal({ isOpen: false, type: null, data: null })
     }, [])
 
-    // Create CV and automatically redirect to edit page
+    // Create CV and automatically redirect to builder page
     const handleCreateCV = async () => {
         if (isCreating) return
 
         try {
             setIsCreating(true)
-            const response = await fetch('/api/cvs', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    name: `Životopis ${new Date().toLocaleDateString('cs-CZ')}`,
-                    content: {}
-                }),
-            })
-
-            if (response.ok) {
-                const newCV = await response.json()
-                // Redirect to edit page immediately
-                router.push(withLocale(`/ucet/edit/${newCV._id}`))
-            }
+            setError(null)
+            
+            const newCVData = await apiHelper.createCV(
+                `Životopis ${new Date().toLocaleDateString('cs-CZ')}`,
+                {
+                    firstName: '',
+                    lastName: '',
+                    email: '',
+                    phone: '',
+                    // Set default empty structure
+                    education: [],
+                    workExperience: [],
+                    languages: [],
+                    driverLicense: [],
+                    otherExperience: ''
+                }
+            )
+            
+            // Redirect to builder page with the new CV ID
+            router.push(withLocale(`/builder/${newCVData.insertedId}`))
         } catch (error) {
             console.error('Failed to create CV:', error)
+            setError('Nepodařilo se vytvořit životopis. Zkuste to prosím znovu.')
         } finally {
             setIsCreating(false)
         }
@@ -184,18 +340,14 @@ const CVDashboard = () => {
 
         try {
             setIsDeleting(true)
-            const response = await fetch('/api/cvs/delete', {
-                method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id: modal.data._id }),
-            })
-
-            if (response.ok) {
-                await fetchCvs()
-                closeModal()
-            }
+            setError(null)
+            
+            await apiHelper.deleteCV(modal.data._id)
+            await fetchCvs()
+            closeModal()
         } catch (error) {
             console.error('Failed to delete CV:', error)
+            setError('Nepodařilo se smazat životopis. Zkuste to prosím znovu.')
         } finally {
             setIsDeleting(false)
         }
@@ -203,17 +355,12 @@ const CVDashboard = () => {
 
     const handleDuplicateCV = async (cv: CV) => {
         try {
-            const response = await fetch('/api/cvs', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    name: `${cv.name} (kopie)`,
-                    content: cv.content
-                }),
-            })
-            if (response.ok) await fetchCvs()
+            setError(null)
+            await apiHelper.createCV(`${cv.name} (kopie)`, cv.content)
+            await fetchCvs()
         } catch (error) {
             console.error('Failed to duplicate CV:', error)
+            setError('Nepodařilo se duplikovat životopis. Zkuste to prosím znovu.')
         }
     }
 
@@ -238,7 +385,10 @@ const CVDashboard = () => {
         return (
             <div className="min-h-screen relative flex items-center justify-center">
                 <AnimatedBackground />
-                <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-400 border-t-transparent relative z-10"></div>
+                <div className="text-center relative z-10">
+                    <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-400 border-t-transparent mx-auto mb-4"></div>
+                    <p className="text-gray-600">Načítání životopisů...</p>
+                </div>
             </div>
         )
     }
@@ -247,7 +397,23 @@ const CVDashboard = () => {
         <div className="min-h-screen relative">
             <AnimatedBackground />
             
-            {/* Simplified Header Section */}
+            {/* Error Display */}
+            {error && (
+                <div className="fixed top-4 right-4 z-50 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg shadow-lg max-w-md">
+                    <div className="flex items-center gap-2">
+                        <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                        <span className="text-sm">{error}</span>
+                        <button
+                            onClick={() => setError(null)}
+                            className="ml-2 text-red-500 hover:text-red-700"
+                        >
+                            <X className="w-4 h-4" />
+                        </button>
+                    </div>
+                </div>
+            )}
+            
+            {/* Header Section */}
             <div className="bg-white/80 backdrop-blur-sm shadow-sm border-b border-gray-200 relative z-10">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
@@ -259,16 +425,18 @@ const CVDashboard = () => {
                                 Spravujte své životopisy a vytvářejte nové příležitosti
                             </p>
 
-                            {/* Simple Stats */}
+                            {/* Stats */}
                             <div className="flex items-center gap-6 mt-4">
                                 <div className="flex items-center gap-2 text-sm text-gray-600">
                                     <FileText className="w-4 h-4 text-blue-500" />
                                     <span>{cvs.length} životopisů</span>
                                 </div>
-                                <div className="flex items-center gap-2 text-sm text-gray-600">
-                                    <TrendingUp className="w-4 h-4 text-emerald-500" />
-                                    <span>Průměrná kvalita: {Math.round(enhancedCvs.reduce((acc, cv) => acc + cv.kvalitaCV, 0) / enhancedCvs.length || 0)}%</span>
-                                </div>
+                                {enhancedCvs.length > 0 && (
+                                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                                        <TrendingUp className="w-4 h-4 text-emerald-500" />
+                                        <span>Průměrná kvalita: {Math.round(enhancedCvs.reduce((acc, cv) => acc + cv.kvalitaCV, 0) / enhancedCvs.length)}%</span>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -291,7 +459,7 @@ const CVDashboard = () => {
                 </div>
             </div>
 
-            {/* Simplified Filters & Search */}
+            {/* Filters & Search */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 relative z-10">
                 <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm border border-gray-200 p-6">
                     <div className="flex flex-col lg:flex-row lg:items-center gap-4">
@@ -435,7 +603,7 @@ const CVDashboard = () => {
                 )}
             </div>
 
-            {/* Simplified Modals */}
+            {/* Modals */}
             {modal.isOpen && (
                 <ModalOverlay onClose={closeModal}>
                     {modal.type === 'delete' && modal.data && (
@@ -459,7 +627,7 @@ const CVDashboard = () => {
     )
 }
 
-// Simplified CV Card Component
+// CV Card Component
 const CVCard = ({ cv, onView, onDuplicate, onDelete, formatDate, withLocale, getQualityScoreClasses }) => (
     <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group relative border border-gray-200">
         {/* Quality Score Badge */}
@@ -472,12 +640,12 @@ const CVCard = ({ cv, onView, onDuplicate, onDelete, formatDate, withLocale, get
 
         {/* Preview Image */}
         <div className="aspect-[3/4] bg-gradient-to-br from-blue-50 to-purple-50 relative overflow-hidden">
-            <img
-                src="/cvblank.png"
-                alt={`Náhled ${cv.name}`}
-                className="w-full h-full object-cover cursor-pointer transition-transform duration-300 group-hover:scale-105"
-                onClick={onView}
-            />
+            <div className="w-full h-full bg-white m-4 rounded-lg shadow-inner flex items-center justify-center cursor-pointer transition-transform duration-300 group-hover:scale-105" onClick={onView}>
+                <div className="text-center p-4">
+                    <FileText className="w-12 h-12 text-gray-300 mx-auto mb-2" />
+                    <p className="text-xs text-gray-500">Náhled CV</p>
+                </div>
+            </div>
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 cursor-pointer" onClick={onView} />
 
             {/* Quick Actions Overlay */}
@@ -519,7 +687,7 @@ const CVCard = ({ cv, onView, onDuplicate, onDelete, formatDate, withLocale, get
 
                 <div className="flex items-center gap-2 text-gray-500 text-sm mb-3">
                     <Calendar className="w-3 h-3" />
-                    <span>Aktualizováno {formatDate(cv.date)}</span>
+                    <span>Aktualizováno {formatDate(cv.updatedAt || cv.date)}</span>
                 </div>
 
                 {/* Progress Indicator */}
@@ -564,13 +732,13 @@ const CVCard = ({ cv, onView, onDuplicate, onDelete, formatDate, withLocale, get
     </div>
 )
 
-// Simplified CV List Item Component
+// CV List Item Component
 const CVListItem = ({ cv, onView, onDuplicate, onDelete, formatDate, withLocale, getQualityScoreClasses }) => (
     <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm hover:shadow-md transition-all duration-200 p-6 border border-gray-200">
         <div className="flex items-center gap-6">
             {/* Thumbnail */}
-            <div className="w-16 h-20 bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg overflow-hidden flex-shrink-0 cursor-pointer" onClick={onView}>
-                <img src="/cvblank.png" alt={cv.name} className="w-full h-full object-cover" />
+            <div className="w-16 h-20 bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg overflow-hidden flex-shrink-0 cursor-pointer flex items-center justify-center" onClick={onView}>
+                <FileText className="w-8 h-8 text-gray-300" />
             </div>
 
             {/* Content */}
@@ -579,7 +747,7 @@ const CVListItem = ({ cv, onView, onDuplicate, onDelete, formatDate, withLocale,
                     <div className="flex-1 min-w-0">
                         <h3 className="font-semibold text-gray-900 text-lg truncate">{cv.name}</h3>
                         <div className="flex items-center gap-4 text-sm text-gray-500 mt-1">
-                            <span>Aktualizováno {formatDate(cv.date)}</span>
+                            <span>Aktualizováno {formatDate(cv.updatedAt || cv.date)}</span>
                         </div>
                     </div>
 
@@ -680,7 +848,7 @@ const DropdownMenu = ({ trigger, items }) => {
     )
 }
 
-// Simplified Modal Components
+// Modal Components
 const ModalOverlay = ({ children, onClose }) => (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div className="relative max-h-[90vh] overflow-auto">
@@ -740,13 +908,61 @@ const ViewCVModal = ({ cv, onClose }) => (
             </button>
         </div>
 
-        <div className="h-[600px]">
-            <PDFViewer width="100%" height={600} style={{ border: 'none' }}>
-                <CvPdfDocument
-                    cvData={cv.content}
-                    photoPreview={cv.content.photoPreview || null}
-                />
-            </PDFViewer>
+        <div className="p-8 max-h-[600px] overflow-y-auto">
+            <div className="bg-white rounded-lg shadow-lg p-8 max-w-2xl mx-auto">
+                <div className="text-center mb-8">
+                    <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                        {cv.content?.titulBefore && `${cv.content.titulBefore} `}
+                        {cv.content?.firstName || 'Jméno'} {cv.content?.lastName || 'Příjmení'}
+                        {cv.content?.titulAfter && `, ${cv.content.titulAfter}`}
+                    </h1>
+                    <div className="text-gray-600">
+                        {cv.content?.email && <p>{cv.content.email}</p>}
+                        {cv.content?.phone && <p>{cv.content.phone}</p>}
+                    </div>
+                </div>
+
+                {cv.content?.workExperience?.length > 0 && (
+                    <div className="mb-6">
+                        <h2 className="text-lg font-semibold text-gray-900 mb-3 border-b border-gray-200 pb-1">
+                            Pracovní zkušenosti
+                        </h2>
+                        {cv.content.workExperience.map((job, index) => (
+                            <div key={index} className="mb-4">
+                                <h3 className="font-medium text-gray-900">{job.position || 'Pozice'}</h3>
+                                <p className="text-blue-600">{job.company || 'Společnost'}</p>
+                                {job.description && (
+                                    <p className="text-sm text-gray-600 mt-1">{job.description}</p>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                {cv.content?.education?.length > 0 && (
+                    <div className="mb-6">
+                        <h2 className="text-lg font-semibold text-gray-900 mb-3 border-b border-gray-200 pb-1">
+                            Vzdělání
+                        </h2>
+                        {cv.content.education.map((edu, index) => (
+                            <div key={index} className="mb-4">
+                                <h3 className="font-medium text-gray-900">{edu.degree || 'Titul'}</h3>
+                                <p className="text-green-600">{edu.school || 'Škola'}</p>
+                                {edu.field && <p className="text-gray-600">{edu.field}</p>}
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                {cv.content?.otherExperience && (
+                    <div className="mb-6">
+                        <h2 className="text-lg font-semibold text-gray-900 mb-3 border-b border-gray-200 pb-1">
+                            Další zkušenosti
+                        </h2>
+                        <p className="text-gray-700">{cv.content.otherExperience}</p>
+                    </div>
+                )}
+            </div>
         </div>
     </div>
 )
