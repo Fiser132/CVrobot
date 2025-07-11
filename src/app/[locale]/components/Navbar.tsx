@@ -5,7 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faBars, faXmark } from '@fortawesome/free-solid-svg-icons'
+import { faBars, faXmark, faCrown } from '@fortawesome/free-solid-svg-icons'
 import { faUser } from '@fortawesome/free-regular-svg-icons'
 import PrimaryButton from './ui/primary-button'
 import { useUser, SignOutButton } from '@clerk/nextjs'
@@ -14,6 +14,7 @@ import { SignInButton } from '@clerk/nextjs'
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [dropdownOpen, setDropdownOpen] = useState(false)
+  const [hasActiveSubscription, setHasActiveSubscription] = useState(false)
 
   const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -22,6 +23,38 @@ export default function Header() {
   const params = useParams()
   const locale = params.locale ?? 'sk'
   const withLocale = (path: string) => `/${locale}${path}`
+
+  // Check subscription status
+  useEffect(() => {
+    const checkSubscriptionStatus = async () => {
+      if (isSignedIn && user) {
+        try {
+          // Option 1: Check from user metadata (if you store subscription status there)
+          const subscriptionStatus = user.publicMetadata?.hasActiveSubscription
+          if (subscriptionStatus) {
+            setHasActiveSubscription(true)
+            return
+          }
+
+          // Option 2: API call to check subscription status
+          const response = await fetch('/api/check-subscription', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: user.id })
+          })
+          
+          if (response.ok) {
+            const data = await response.json()
+            setHasActiveSubscription(data.hasActiveSubscription)
+          }
+        } catch (error) {
+          console.error('Error checking subscription status:', error)
+        }
+      }
+    }
+
+    checkSubscriptionStatus()
+  }, [isSignedIn, user])
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -40,8 +73,22 @@ export default function Header() {
     }
   }, [dropdownOpen])
 
+  // User Avatar Component with Crown
+  const UserAvatarWithCrown = ({ className = "" }: { className?: string }) => (
+    <div className={`relative inline-block ${className}`}>
+      <FontAwesomeIcon icon={faUser} className="p-2.5 rounded-full bg-gray-200" />
+      {hasActiveSubscription && (
+        <FontAwesomeIcon 
+          icon={faCrown} 
+          className="absolute -top-1 -right-1 text-yellow-500 text-xs bg-white rounded-full p-0.5"
+          style={{ fontSize: '10px' }}
+        />
+      )}
+    </div>
+  )
+
   return (
-    <header className="bg-white">
+    <header className="bg-white z-50">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         <Link
           href={withLocale('/')}
@@ -89,8 +136,17 @@ export default function Header() {
                 onClick={() => setDropdownOpen(!dropdownOpen)}
                 className="flex items-center gap-3 text-black hover:text-secondary"
               >
-                <FontAwesomeIcon icon={faUser} className="p-2.5 rounded-full bg-gray-200" />
-                <span className="text-[14px] underline">{userName}</span>
+                <UserAvatarWithCrown />
+                <span className="text-[14px] underline">
+                  {userName}
+                  {hasActiveSubscription && (
+                    <FontAwesomeIcon 
+                      icon={faCrown} 
+                      className="ml-1 text-yellow-500" 
+                      style={{ fontSize: '12px' }}
+                    />
+                  )}
+                </span>
               </button>
               {dropdownOpen && (
                 <div className="absolute right-0 mt-2 w-max bg-white border border-gray-200 text-black shadow-xl z-50">
@@ -106,6 +162,15 @@ export default function Header() {
                   >
                     Změna hesla
                   </Link>
+                  {hasActiveSubscription && (
+                    <Link
+                      href={withLocale('/predplatne')}
+                      className="block px-6 py-2 text-sm hover:bg-gray-100 hover:text-primary flex items-center gap-2"
+                    >
+                      <FontAwesomeIcon icon={faCrown} className="text-yellow-500" style={{ fontSize: '12px' }} />
+                      Předplatné
+                    </Link>
+                  )}
                   <SignOutButton>
                     <button className="block w-full text-left px-6 py-2 text-sm hover:bg-gray-100 hover:text-primary">
                       Odhlásit se
@@ -167,8 +232,17 @@ export default function Header() {
             {isSignedIn ? (
               <div className="flex flex-col items-center gap-2 mt-20">
                 <div className="text-black text-center">
-                  <FontAwesomeIcon icon={faUser} className="text-lg mb-1" />
-                  <p className="text-sm font-semibold">{userName}</p>
+                  <UserAvatarWithCrown className="text-lg mb-1" />
+                  <p className="text-sm font-semibold flex items-center justify-center gap-1">
+                    {userName}
+                    {hasActiveSubscription && (
+                      <FontAwesomeIcon 
+                        icon={faCrown} 
+                        className="text-yellow-500" 
+                        style={{ fontSize: '12px' }}
+                      />
+                    )}
+                  </p>
                 </div>
                 <div className="mt-4 text-sm text-black text-center space-y-2">
                   <Link
@@ -185,6 +259,16 @@ export default function Header() {
                   >
                     Nastavení
                   </Link>
+                  {hasActiveSubscription && (
+                    <Link
+                      href={withLocale('/predplatne')}
+                      onClick={() => setMenuOpen(false)}
+                      className="block flex items-center justify-center gap-1"
+                    >
+                      <FontAwesomeIcon icon={faCrown} className="text-yellow-500" style={{ fontSize: '12px' }} />
+                      Předplatné
+                    </Link>
+                  )}
                   <SignOutButton>
                     <button className="block w-full" onClick={() => setMenuOpen(false)}>
                       Odhlásit se
