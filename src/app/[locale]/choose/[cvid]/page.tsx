@@ -1,9 +1,10 @@
 'use client'
 import React, { useEffect, useState } from 'react';
+import { useUser, useAuth } from '@clerk/nextjs';
 import { Download, Shield, CheckCircle, Clock, FileText, CreditCard, ArrowLeft, Star, Sparkles, Zap, Code, Database, Server, Webhook, Terminal, GitBranch, Cpu, Globe, AlertCircle } from 'lucide-react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 
-// Animated Background Component (same as before)
+// Animated Background Component
 const AnimatedBackground = () => {   
   return (     
     <div className="inset-0 overflow-hidden pointer-events-none">       
@@ -27,9 +28,8 @@ const AnimatedBackground = () => {
   ); 
 };
 
-// API Helper Functions - Same pattern as builder/edit page
+// API Helper Functions
 const apiHelper = {
-  // Get specific CV by ID
   async getCVById(id) {
     try {
       const response = await fetch(`/api/cvs/${id}`, {
@@ -54,22 +54,19 @@ const apiHelper = {
   }
 }
 
-// Calculate Quality Score (same as dashboard)
+// Calculate Quality Score
 const calculateQualityScore = (content) => {
   let score = 0
   
-  // Basic info (30 points max)
   if (content.firstName && content.lastName) score += 8
   if (content.email) score += 8
   if (content.phone) score += 8
   if (content.photo) score += 6
   
-  // Address (10 points max)
   if (content.street && content.city) score += 5
   if (content.zip) score += 3
   if (content.region) score += 2
   
-  // Professional info (40 points max)
   if (content.workExperience?.length > 0) {
     score += 15
     const detailedWork = content.workExperience.filter(job => 
@@ -86,7 +83,6 @@ const calculateQualityScore = (content) => {
     score += Math.min(detailedEducation.length * 3, 10)
   }
   
-  // Additional sections (20 points max)
   if (content.languages?.length > 0) score += 5
   if (content.otherExperience && content.otherExperience.length > 100) score += 8
   if (content.driverLicense?.length > 0) score += 2
@@ -98,14 +94,12 @@ const calculateQualityScore = (content) => {
 
 // Generate CV Title from content
 const generateCVTitle = (content) => {
-  // Try to create a meaningful title from the CV content
   let title = ''
   
   if (content.firstName && content.lastName) {
     title = `${content.firstName} ${content.lastName}`
   }
   
-  // Add position from latest work experience
   if (content.workExperience?.length > 0) {
     const latestJob = content.workExperience[0]
     if (latestJob.position) {
@@ -113,7 +107,6 @@ const generateCVTitle = (content) => {
     }
   }
   
-  // Fallback titles
   if (!title && content.firstName) {
     title = `${content.firstName} CV`
   } else if (!title) {
@@ -123,7 +116,7 @@ const generateCVTitle = (content) => {
   return title
 }
 
-// Enhanced Version Card Component (same as before)
+// Enhanced Version Card Component
 const VersionCard = ({ version, isSelected, onSelect }) => {
   const techFeatures = {
     basic: [
@@ -248,7 +241,7 @@ const VersionCard = ({ version, isSelected, onSelect }) => {
   );
 };
 
-// Tech Specs Component (same as before)
+// Tech Specs Component
 const TechSpecs = ({ selectedVersion }) => {
   const specs = {
     basic: {
@@ -328,7 +321,6 @@ const CvPreview = ({ cvData, selectedVersion, qualityScore }) => {
     );
   }
 
-  // Generate display name from CV content
   const displayName = cvData.content?.firstName && cvData.content?.lastName 
     ? `${cvData.content.firstName} ${cvData.content.lastName}` 
     : cvData.name || 'Professional CV';
@@ -479,8 +471,8 @@ const CvPreview = ({ cvData, selectedVersion, qualityScore }) => {
   );
 };
 
-// Enhanced Payment Summary Component
-const PaymentSummary = ({ cvName, selectedVersion, onPayment, loading }) => {
+// Enhanced Payment Summary Component with subscription check
+const PaymentSummary = ({ cvName, selectedVersion, onPayment, loading, hasActiveSubscription }) => {
   if (!selectedVersion) {
     return (
       <div className="bg-white/70 backdrop-blur-lg border border-gray-200/50 rounded-2xl p-8 shadow-xl">
@@ -489,6 +481,30 @@ const PaymentSummary = ({ cvName, selectedVersion, onPayment, loading }) => {
           <p className="text-gray-500 text-lg">Select a version to continue</p>
           <p className="text-gray-400 text-sm mt-2">Choose your deployment strategy</p>
         </div>
+      </div>
+    );
+  }
+
+  // If user already has active subscription and selects pro, show different message
+  if (selectedVersion.id === 'pro' && hasActiveSubscription) {
+    return (
+      <div className="bg-white/70 backdrop-blur-lg border border-gray-200/50 rounded-2xl p-8 shadow-xl">
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4">
+            <CheckCircle className="w-8 h-8 text-white" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Pro Active</h2>
+          <p className="text-gray-600">You already have an active Pro subscription</p>
+        </div>
+        
+        <button
+          onClick={onPayment}
+          disabled={loading}
+          className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-6 px-8 rounded-2xl transition-all duration-300 flex items-center justify-center gap-3 shadow-2xl transform hover:scale-[1.02]"
+        >
+          <Download className="w-6 h-6" />
+          Download Pro Version
+        </button>
       </div>
     );
   }
@@ -642,7 +658,7 @@ const PaymentSummary = ({ cvName, selectedVersion, onPayment, loading }) => {
   );
 };
 
-// Version Selection Component (same as before)
+// Version Selection Component
 const VersionSelector = ({ selectedVersion, onVersionChange }) => {
   const versions = [
     {
@@ -687,7 +703,7 @@ const VersionSelector = ({ selectedVersion, onVersionChange }) => {
   );
 };
 
-// Progress Indicator Component (same as before)
+// Progress Indicator Component
 const ProgressIndicator = () => {
   return (
     <div className="flex items-center justify-center mb-12">
@@ -717,8 +733,12 @@ const ProgressIndicator = () => {
   );
 };
 
-// Main Payment Page Component with Real MongoDB Integration
+// Main Payment Page Component with Clerk Integration
 export default function PaymentPage({ params }) {
+  const { user, isLoaded: userLoaded } = useUser();
+  const { userId, isLoaded: authLoaded } = useAuth();
+  const router = useRouter();
+  
   const [loading, setLoading] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [cvName, setCvName] = useState(null);
@@ -726,14 +746,46 @@ export default function PaymentPage({ params }) {
   const [qualityScore, setQualityScore] = useState(null);
   const [fetchError, setFetchError] = useState(null);
   const [selectedVersion, setSelectedVersion] = useState(null);
-  const searchParams = useSearchParams();
+  const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
+  const [subscriptionLoading, setSubscriptionLoading] = useState(true);
   
-  // Get locale and cvId from URL
+  const searchParams = useSearchParams();
   const locale = params.locale;
   const cvId = searchParams.get('cvId') || params?.cvid;
   const defaultVersion = searchParams.get('version') || 'basic';
 
-  // Load real CV data from MongoDB
+  // Check subscription status when user is loaded
+  useEffect(() => {
+    const checkSubscriptionStatus = async () => {
+      if (!authLoaded || !userId) {
+        setSubscriptionLoading(false);
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/subscription/status');
+        if (response.ok) {
+          const data = await response.json();
+          setHasActiveSubscription(data.hasActiveSubscription);
+        }
+      } catch (error) {
+        console.error('Error checking subscription status:', error);
+      } finally {
+        setSubscriptionLoading(false);
+      }
+    };
+
+    checkSubscriptionStatus();
+  }, [authLoaded, userId]);
+
+  // Redirect to sign-in if not authenticated
+  useEffect(() => {
+    if (authLoaded && !userId) {
+      router.push(`/sign-in?redirect_url=${encodeURIComponent(window.location.href)}`);
+    }
+  }, [authLoaded, userId, router]);
+
+  // Load CV data
   useEffect(() => {
     const fetchCvData = async () => {
       if (!cvId || cvId === 'new') {
@@ -756,12 +808,10 @@ export default function PaymentPage({ params }) {
 
         console.log('Loaded CV data:', cvData);
         
-        // Set CV data and calculate quality score
         setCvData(cvData);
         const score = calculateQualityScore(cvData.content || {});
         setQualityScore(score);
         
-        // Generate CV name from content or use stored name
         const generatedTitle = generateCVTitle(cvData.content || {});
         setCvName(cvData.name || generatedTitle);
         
@@ -805,6 +855,12 @@ export default function PaymentPage({ params }) {
   const handlePayment = async () => {
     if (!cvId || !selectedVersion) return;
     
+    // Check if user is authenticated
+    if (!userId) {
+      router.push(`/sign-in?redirect_url=${encodeURIComponent(window.location.href)}`);
+      return;
+    }
+    
     setLoading(true);
     
     try {
@@ -814,9 +870,14 @@ export default function PaymentPage({ params }) {
         return;
       }
       
-      console.log('Calling payment API with:', { locale, cvId, version: selectedVersion.id });
+      // If user already has active subscription, go directly to download
+      if (hasActiveSubscription && selectedVersion.id === 'pro') {
+        window.location.href = `/${locale}/download?cvId=${cvId}&version=pro`;
+        return;
+      }
       
-      // First, try to create the checkout session
+      console.log('Creating Stripe checkout session...');
+      
       const response = await fetch('/api/stripe/checkout', {
         method: 'POST',
         headers: {
@@ -831,117 +892,46 @@ export default function PaymentPage({ params }) {
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('API Error:', errorText);
-        
-        // Fallback: redirect to a payment page with parameters
-        const fallbackUrl = `/payment-fallback?cvId=${cvId}&version=${selectedVersion.id}&amount=${selectedVersion.price}&locale=${locale}`;
-        window.location.href = fallbackUrl;
-        return;
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
-      console.log('Session data received:', data);
       
-      if (!data.id && !data.url) {
-        throw new Error('No session ID or URL returned from API');
-      }
-
-      // If we get a direct URL, redirect to it
       if (data.url) {
         window.location.href = data.url;
         return;
       }
       
-      // Otherwise, try to load Stripe
-      const publishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
-      
-      if (!publishableKey) {
-        console.warn('Stripe publishable key not found, using direct redirect');
-        if (data.redirect_url) {
-          window.location.href = data.redirect_url;
-          return;
-        }
-        throw new Error('Payment configuration error');
-      }
-      
-      try {
-        // Dynamic import with error handling
-        const stripeModule = await import('@stripe/stripe-js').catch(err => {
-          console.warn('Failed to load Stripe module:', err);
-          return null;
-        });
-        
-        if (!stripeModule || !stripeModule.loadStripe) {
-          console.warn('Stripe module not available, using fallback');
-          const checkoutUrl = `https://checkout.stripe.com/pay/${data.id}`;
-          window.location.href = checkoutUrl;
-          return;
-        }
-
-        const stripe = await stripeModule.loadStripe(publishableKey);
-        
-        if (!stripe) {
-          console.warn('Failed to initialize Stripe, using direct redirect');
-          window.location.href = data.redirect_url || `/payment-error?reason=stripe-init-failed`;
-          return;
-        }
-        
-        console.log('Redirecting to Stripe checkout...');
-        const { error } = await stripe.redirectToCheckout({ sessionId: data.id });
-        
-        if (error) {
-          console.error('Stripe redirect error:', error);
-          throw new Error(`Stripe error: ${error.message}`);
-        }
-        
-      } catch (stripeError) {
-        console.error('Stripe integration error:', stripeError);
-        const fallbackUrl = `/payment-fallback?cvId=${cvId}&version=${selectedVersion.id}&amount=${selectedVersion.price}&locale=${locale}&error=stripe-failed`;
-        window.location.href = fallbackUrl;
-      }
+      throw new Error('No checkout URL returned');
       
     } catch (error) {
-      console.error('Payment error details:', error);
-      
-      const errorMessage = error.message.includes('fetch') 
-        ? 'Network error. Please check your connection and try again.'
-        : error.message.includes('Stripe')
-        ? 'Payment system temporarily unavailable. Please try again in a few moments.'
-        : `Payment error: ${error.message}`;
-        
-      alert(errorMessage);
-      
-      if (confirm('Would you like to contact support for manual payment processing?')) {
-        const supportEmail = 'support@yoursite.com';
-        const subject = `Manual Payment Request - CV ${cvId}`;
-        const body = `Hello,\n\nI encountered an error during checkout for:\n- Product: ${cvName}\n- Version: ${selectedVersion.name}\n- Amount: ${selectedVersion.price} €\n- CV ID: ${cvId}\n\nPlease assist with manual payment processing.\n\nError details: ${error.message}`;
-        
-        window.location.href = `mailto:${supportEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-      }
+      console.error('Payment error:', error);
+      alert(`Payment error: ${error.message}`);
     } finally {
       setLoading(false);
     }
   };
 
   const handleGoBack = () => {
-    // Navigate back to the CV builder/edit page
     if (cvId && cvId !== 'new') {
-      window.location.href = `/${locale}/ucet/edit/${cvId}`;
+      router.push(`/${locale}/ucet/edit/${cvId}`);
     } else {
-      window.location.href = `/${locale}/ucet`;
+      router.push(`/${locale}/ucet`);
     }
   };
 
-  // Loading state
-  if (isInitialLoading) {
+  // Show loading state while checking authentication and subscription
+  if (!authLoaded || !userLoaded || subscriptionLoading || isInitialLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
         <AnimatedBackground />
         <div className="text-center relative z-10">
           <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <h1 className="text-xl font-semibold text-gray-900 mb-2">Loading your CV...</h1>
-          <p className="text-gray-600">Preparing deployment options</p>
+          <h1 className="text-xl font-semibold text-gray-900 mb-2">
+            {!authLoaded || !userLoaded ? 'Authenticating...' : 'Loading your CV...'}
+          </h1>
+          <p className="text-gray-600">Please wait</p>
         </div>
       </div>
     );
@@ -966,7 +956,7 @@ export default function PaymentPage({ params }) {
               Go back to CV builder
             </button>
             <button
-              onClick={() => window.location.href = `/${locale}/ucet`}
+              onClick={() => router.push(`/${locale}/ucet`)}
               className="text-gray-500 hover:text-gray-600 font-medium"
             >
               Go to dashboard
@@ -981,7 +971,7 @@ export default function PaymentPage({ params }) {
     <div className="min-h-screen transition-colors duration-300 bg-gray-50">
       <AnimatedBackground />
       
-      {/* Header */}
+      {/* Header with user info */}
       <header className="bg-white/80 backdrop-blur-lg border-b border-gray-200 relative z-10">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
@@ -998,18 +988,39 @@ export default function PaymentPage({ params }) {
                 CV Deployment
               </h1>
             </div>
-            {qualityScore && (
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600">Quality Score:</span>
-                <span className={`px-3 py-1 rounded-full text-sm font-bold ${
-                  qualityScore >= 80 ? 'bg-green-100 text-green-700' :
-                  qualityScore >= 60 ? 'bg-yellow-100 text-yellow-700' :
-                  'bg-red-100 text-red-700'
-                }`}>
-                  {qualityScore}%
+            
+            <div className="flex items-center gap-4">
+              {hasActiveSubscription && (
+                <span className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1">
+                  <CheckCircle className="w-4 h-4" />
+                  Pro Active
                 </span>
-              </div>
-            )}
+              )}
+              {user && (
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                    <span className="text-white text-sm font-bold">
+                      {user.firstName?.[0] || user.emailAddresses[0]?.emailAddress[0] || 'U'}
+                    </span>
+                  </div>
+                  <span className="text-gray-700 font-medium">
+                    {user.firstName || 'User'}
+                  </span>
+                </div>
+              )}
+              {qualityScore && (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-600">Quality Score:</span>
+                  <span className={`px-3 py-1 rounded-full text-sm font-bold ${
+                    qualityScore >= 80 ? 'bg-green-100 text-green-700' :
+                    qualityScore >= 60 ? 'bg-yellow-100 text-yellow-700' :
+                    'bg-red-100 text-red-700'
+                  }`}>
+                    {qualityScore}%
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </header>
@@ -1030,7 +1041,10 @@ export default function PaymentPage({ params }) {
                 Production Preview
               </h2>
               <p className="text-lg text-gray-600">
-                Choose your CV access level - download once or edit forever with cloud storage
+                {hasActiveSubscription 
+                  ? 'You have Pro access - download unlimited watermark-free CVs'
+                  : 'Choose your CV access level - download once or edit forever with cloud storage'
+                }
               </p>
             </div>
 
@@ -1050,7 +1064,23 @@ export default function PaymentPage({ params }) {
               selectedVersion={selectedVersion}
               onPayment={handlePayment}
               loading={loading}
+              hasActiveSubscription={hasActiveSubscription}
             />
+
+            {/* Subscription Status Info */}
+            {hasActiveSubscription && (
+              <div className="mt-8 bg-green-50 rounded-2xl p-6 border border-green-200">
+                <div className="flex items-start gap-3">
+                  <CheckCircle className="w-5 h-5 text-green-500 mt-0.5" />
+                  <div>
+                    <p className="font-bold text-green-900">Pro Subscription Active</p>
+                    <p className="text-sm text-green-700 mt-1">
+                      You have unlimited access to watermark-free downloads and all premium features.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Additional Info */}
             <div className="mt-8 bg-blue-50 rounded-2xl p-6 border border-blue-200">
@@ -1061,6 +1091,8 @@ export default function PaymentPage({ params }) {
                   <p className="text-sm text-blue-700 mt-1">
                     {selectedVersion?.price === 0 
                       ? 'Free download starts immediately with watermark'
+                      : hasActiveSubscription
+                      ? 'Your CV is ready for immediate download with all Pro features'
                       : 'Your CV is saved in the cloud forever. Edit anytime, download watermark-free versions with all premium templates and priority support'
                     }
                   </p>
@@ -1068,7 +1100,7 @@ export default function PaymentPage({ params }) {
               </div>
             </div>
 
-            {selectedVersion?.id === 'pro' && (
+            {selectedVersion?.id === 'pro' && !hasActiveSubscription && (
               <div className="mt-6 bg-gradient-to-r from-purple-50 to-blue-50 rounded-2xl p-6 border border-purple-200">
                 <div className="flex items-start gap-3">
                   <Sparkles className="w-5 h-5 text-purple-500 mt-0.5" />
